@@ -17,10 +17,10 @@ HoldON is a clip-on IoT device and web dashboard that lets motorcycle ride-haili
 ## Project Structure
 
 hold-on/
-├── firmware/ # Arduino/C++ code for NodeMCU ESP8266
-├── backend/ # Node.js + Express + Firebase + MQTT
-├── dashboard/ # Vue.js 3 frontend dashboard
-└── docs/ # Wiring diagrams, proposal, documentation
+firmware/ # Arduino/C++ code for NodeMCU ESP8266
+backend/ # Node.js + Express + Firebase + MQTT
+dashboard/ # Vue.js 3 frontend dashboard
+docs/ # Wiring diagrams, proposal, documentation
 
 ## Tech Stack
 
