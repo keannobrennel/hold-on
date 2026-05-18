@@ -1,0 +1,87 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #222222;
+  --border: #2e2e2e;
+  --text-primary: #f0f0f0;
+  --text-secondary: #888888;
+  --accent: #e05c2a;
+  --accent-soft: rgba(224, 92, 42, 0.15);
+  --danger: #e24b4a;
+  --success: #1d9e75;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 500;
+}
+h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+h3 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+input,
+button {
+  font-family: inherit;
+  font-size: 15px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  width: 100%;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
