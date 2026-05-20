@@ -7,8 +7,25 @@ app.use(cors());
 app.use(express.json());
 
 // Firebase and MQTT connections
-const { db, firestore } = require("./config/firebase");
+const { admin, db, firestore } = require("./config/firebase");
 const mqttClient = require("./config/mqtt");
+
+// Authentication middleware
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized — no token provided" });
+  }
+
+  const idToken = authHeader.split("Bearer ")[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Unauthorized — invalid token" });
+  }
+};
 
 // MQTT message handler
 mqttClient.on("message", (topic, message) => {
@@ -37,8 +54,13 @@ mqttClient.on("message", (topic, message) => {
   }
 });
 
-// Routes (to be added)
-// app.use("/api/trips", require("./routes/trips"));
+// Protected routes (to be added)
+// app.use("/api/trips", authenticate, require("./routes/trips"));
+
+// Test protected route
+app.get("/api/me", authenticate, (req, res) => {
+  res.json({ uid: req.user.uid, email: req.user.email });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
