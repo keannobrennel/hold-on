@@ -4,6 +4,7 @@ import { auth } from "../firebase";
 import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
+import HardwareTest from "../views/testing-ui/HardwareTest.vue";
 
 const routes = [
   {
@@ -25,6 +26,13 @@ const routes = [
     path: "/trip/:tripId",
     name: "Trip",
     component: TripView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/hardware-test",
+    name: "HardwareTest",
+    component: HardwareTest,
+    // no requiresAuth for now, so you can test ESP without logging in
   },
 ];
 
@@ -33,14 +41,15 @@ const router = createRouter({
   routes,
 });
 
-// Guard: redirect to login if not authenticated
 router.beforeEach((to, from, next) => {
   const user = auth.currentUser;
+
   if (to.meta.requiresAuth && !user) {
     next("/login");
-  } else {
-    next();
+    return;
   }
+
+  next();
 });
 
 export default router;
