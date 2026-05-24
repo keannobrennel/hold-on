@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { auth } from "../firebase";
 
-import LoginView from "../views/LoginView.vue";
+import LoginView from "../views/Login.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
+import CreateAccount from "../views/CreateAccount.vue";
 
 const routes = [
   {
@@ -25,6 +26,10 @@ const routes = [
     path: "/trip/:tripId",
     name: "Trip",
     component: TripView,
+  },
+  { path: "/register",
+    name: "Create Account", 
+    component: CreateAccount, 
   },
 ];
 
