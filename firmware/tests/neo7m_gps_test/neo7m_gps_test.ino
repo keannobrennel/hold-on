@@ -3,8 +3,8 @@
 #include <SoftwareSerial.h>
 #include <TinyGPSPlus.h>
 
-const char* WIFI_SSID = "YOUR_WIFI_NAME";
-const char* WIFI_PASS = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "bbrouter";
+const char* WIFI_PASS = "107149090195";
 
 const int GPS_RX_PIN = D5; // ESP RX, connect to GPS TX
 const int GPS_TX_PIN = D6; // ESP TX, optional, connect to GPS RX if needed

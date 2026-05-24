@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-const char* WIFI_SSID = "YOUR_WIFI_NAME";
-const char* WIFI_PASS = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "bbrouter";
+const char* WIFI_PASS = "107149090195";
 
 // Most NodeMCU dev boards scale A0 to about 0-3.3V.
 // Bare ESP8266 ADC is 0-1.0V. Change this if needed.

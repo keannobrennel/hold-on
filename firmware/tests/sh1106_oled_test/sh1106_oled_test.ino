@@ -3,8 +3,8 @@
 #include <Wire.h>
 #include <U8g2lib.h>
 
-const char* WIFI_SSID = "YOUR_WIFI_NAME";
-const char* WIFI_PASS = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "bbrouter";
+const char* WIFI_PASS = "107149090195";
 
 const int SDA_PIN = D2; // GPIO4
 const int SCL_PIN = D1; // GPIO5
