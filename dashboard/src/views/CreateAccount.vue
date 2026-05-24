@@ -133,8 +133,8 @@ const signInWith = async (providerName) => {
           letterSpacing: '-1.5px',
         }"
       >
-        <span :style="{ color: darkMode ? '#FFFFFF' : '#000000' }">Create </span>
-        <span :style="{ color: '#3BFF65' }">Account</span>
+        <span :style="{ color: darkMode ? '#FFFFFF' : '#000000' }">Sign </span>
+        <span :style="{ color: '#3BFF65' }">In</span>
       </h1>
 
       <p
