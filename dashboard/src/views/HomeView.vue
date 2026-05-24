@@ -103,152 +103,259 @@ const signOut = async () => {
 </script>
 
 <style scoped>
-.page-wrapper {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.login-container {
+  width: 100%;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--bg-secondary);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  font-size: 17px;
-}
-
-.brand i {
-  font-size: 20px;
-  color: var(--accent);
-}
-
-.signout-btn {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 0.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  padding: 7px 14px;
-}
-
-.signout-btn:hover {
-  color: var(--text-primary);
-  opacity: 1;
-  border-color: var(--text-secondary);
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  gap: 1.25rem;
-}
-
-.card {
-  background: var(--bg-card);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.card-sub {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-button i {
-  font-size: 16px;
-  vertical-align: -2px;
-  margin-right: 4px;
-}
-
-.link-card {
-  border-color: var(--success);
-}
-
-.link-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--success);
-  font-weight: 500;
-  font-size: 15px;
-}
-
-.link-header i {
-  font-size: 20px;
-}
-
-.link-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.link-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-secondary);
-  border: 0.5px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-}
-
-.link-row a {
-  flex: 1;
-  font-size: 13px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  position: relative;
+  font-family: 'Inter', sans-serif;
 }
 
-.copy-btn {
-  background: transparent;
-  border: 0.5px solid var(--border);
-  color: var(--text-primary);
+/* TOGGLE */
+.theme-toggle {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #39ff5a;
+  color: #000;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
-  padding: 6px 12px;
-  white-space: nowrap;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 50;
+  transition: 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+}
+
+/* LEFT */
+.left-section {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* BIG LOCATION ICON */
+.location-icon {
+  width: 520px;
+  height: 520px;
+  background: #000;
+  border: 20px solid #39ff5a;
+  border-radius: 50%;
+  position: absolute;
+  top: 20px;
+  left: -160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* INNER CIRCLE */
+.location-center {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+/* POINTER */
+.location-pointer {
+  position: absolute;
+  bottom: -200px;
+  width: 0;
+  height: 0;
+  border-left: 155px solid transparent;
+  border-right: 155px solid transparent;
+  border-top: 260px solid #000;
+}
+
+/* CURVE */
+.location-curve {
+  position: absolute;
+  bottom: 10px;
+  left: -20px;
+  width: 320px;
+  height: 160px;
+  border-bottom: 20px solid #39ff5a;
+  border-radius: 0 0 220px 220px;
+  transform: rotate(10deg);
+}
+
+/* RIGHT */
+.right-section {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  padding: 40px;
 }
 
-.copy-btn i {
-  font-size: 14px;
-  margin: 0;
+/* FORM */
+.form-wrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+.welcome-text {
+  font-size: 22px;
+  margin-bottom: 6px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+
+.logo-text {
+  font-size: 90px;
+  font-weight: 900;
+  line-height: 0.95;
+  margin-bottom: 28px;
+  letter-spacing: -4px;
+}
+
+.green-text {
+  color: #39ff5a;
+}
+
+/* INPUTS */
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input {
+  width: 100%;
+  height: 46px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.login-input::placeholder {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  color: #8b8b8b;
+}
+
+/* BUTTON */
+.login-button {
+  width: 140px;
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  margin: 6px auto 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ERROR */
+.error-message {
+  color: #ff4d4f;
+  font-size: 13px;
+  margin-top: -5px;
+}
+
+/* DIVIDER */
+.divider {
+  width: 100%;
+  height: 1px;
+  margin-top: 22px;
+  margin-bottom: 14px;
+}
+
+/* CREATE */
+.create-account-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.create-link {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1000px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .left-section {
+    display: none;
+  }
+
+  .right-section {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  .logo-text {
+    font-size: 72px;
+  }
+
+  .form-wrapper {
+    max-width: 450px;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .theme-toggle {
+    top: 15px;
+    right: 15px;
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .right-section {
+    padding: 70px 20px 40px;
+  }
+
+  .welcome-text {
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 58px;
+    letter-spacing: -2px;
+  }
+
+  .login-button {
+    width: 100%;
+  }
 }
 </style>
