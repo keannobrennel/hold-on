@@ -1,120 +1,100 @@
 <template>
-  <main class="live-trip-shell">
-    <section class="trip-layout">
+  <main class="shared-trip-shell">
+    <section class="shared-layout">
       <!-- LEFT PANEL -->
       <aside class="left-panel">
         <div class="stat-card duration-card">
           <p>TRIP DURATION</p>
-          <h1>{{ tripStarted ? formattedDuration : "--:--:--" }}</h1>
-          <span>
-            {{ tripStarted ? `of est ${estimatedDuration}` : "start trip to begin timer" }}
-          </span>
+          <h1>{{ formattedDuration }}</h1>
+          <span>of est {{ estimatedDuration }}</span>
         </div>
 
         <div class="stat-card panic-card">
           <p>PANIC EVENTS</p>
           <h1>{{ panicEvents.length }}</h1>
-          <span>
-            {{ panicEvents.length ? "last trigger at 12:10 PM" : "no panic events yet" }}
-          </span>
+          <span>last trigger at 12:10 PM</span>
         </div>
 
         <div class="event-section">
-  <h3>EVENT LOGS</h3>
+          <h3>EVENT LOG</h3>
 
-        <div class="event-scroll">
-          <div
-            v-for="event in visibleEvents"
-            :key="event.id"
-            class="event-card"
-            :class="event.type"
-          >
-            <div class="event-icon">
-              <i :class="event.icon"></i>
-            </div>
-            <div>
-              <strong>{{ event.title }}</strong>
-              <small>{{ event.time }}</small>
+          <div class="event-scroll">
+            <div
+              v-for="event in visibleEvents"
+              :key="event.id"
+              class="event-card"
+              :class="event.type"
+            >
+              <div class="event-icon">
+                <i :class="event.icon"></i>
+              </div>
+              <div>
+                <strong>{{ event.title }}</strong>
+                <small>{{ event.time }}</small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </aside>
 
       <!-- CENTER MAP -->
       <section class="map-panel">
-        <div v-if="tripStarted && latestAlert" class="map-alert">
+        <div v-if="showPanicAlert" class="map-alert">
           <i class="ti ti-alert-triangle"></i>
-          {{ latestAlert }}
+          Panic event at 12:09 PM detected
         </div>
 
-        <div id="home-map" class="map-container"></div>
+        <div id="shared-map" class="map-container"></div>
       </section>
 
       <!-- RIGHT PANEL -->
-      <aside class="right-panel">
-        <h2>CURRENT TRIP</h2>
+      <aside class="right-column">
+        <div class="current-trip-card">
+          <h2>CURRENT TRIP</h2>
 
-        <div class="location-card active-location">
-          <div>
-            <input
-              v-model="pickupLocation"
-              :disabled="tripStarted"
-              placeholder="Search pick-up . . ."
-            />
-            <span>Pick-Up</span>
+          <div class="location-card active-location">
+            <div>
+              <strong>{{ pickupLocation }}</strong>
+              <span>Pick-Up</span>
+            </div>
+            <i class="ti ti-current-location"></i>
           </div>
-          <i class="ti ti-current-location"></i>
-        </div>
 
-        <div class="route-dots"></div>
+          <div class="route-dots"></div>
 
-        <div class="location-card">
-          <div>
-            <input
-              v-model="destination"
-              :disabled="tripStarted"
-              placeholder="Search destination . . ."
-            />
-            <span>Drop-off</span>
+          <div class="location-card">
+            <div>
+              <strong>{{ destination }}</strong>
+              <span>Drop-off</span>
+            </div>
+            <i class="ti ti-map-pin"></i>
           </div>
-          <i class="ti ti-map-pin"></i>
+
+          <div class="trip-meta">
+            <span>
+              <i class="ti ti-clock"></i>
+              ETA {{ eta }}
+            </span>
+            <span>
+              <i class="ti ti-route"></i>
+              DISTANCE {{ distance }}
+            </span>
+          </div>
         </div>
 
-        <div class="trip-meta">
-          <span>
-            <i class="ti ti-clock"></i>
-            ETA {{ tripStarted ? eta : "--:--" }}
-          </span>
-          <span>
-            <i class="ti ti-route"></i>
-            DISTANCE {{ tripStarted ? distance : "--" }}
-          </span>
-        </div>
+        <div class="passenger-status">
+          <div class="status-heading">
+            <h3>PASSENGER STATUS</h3>
+            <span class="status-pill" :class="passengerStatusClass">
+              <span></span>
+              {{ passengerStatus }}
+            </span>
+          </div>
 
-        <div class="share-box">
-          <span v-if="!tripStarted">Link will appear after starting trip</span>
-          <span v-else>{{ shareableLink }}</span>
-        </div>
-
-        <button
-          v-if="!tripStarted"
-          class="primary-action"
-          :disabled="!pickupLocation || !destination"
-          @click="startTrip"
-        >
-          Start
-        </button>
-
-        <template v-else>
-          <button class="primary-action" @click="copyLink">
-            {{ copied ? "Copied!" : "Copy link" }}
+          <button class="call-btn" @click="callPassenger">
+            Call Passenger
           </button>
-
-          <button class="secondary-action" @click="endTrip">
-            End trip
-          </button>
-        </template>
+        </div>
       </aside>
     </section>
   </main>
@@ -125,33 +105,74 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const pickupLocation = ref("");
-const destination = ref("");
-const tripStarted = ref(false);
-const copied = ref(false);
-const elapsedSeconds = ref(0);
-const estimatedDuration = ref("00:15:00");
+const pickupLocation = ref("SM Megamall");
+const destination = ref("SMDC Shine Residences");
 const eta = ref("12:15 PM");
 const distance = ref("7.5 KM");
-const shareableLink = ref("");
-const latestAlert = ref("");
+const estimatedDuration = ref("00:15:00");
+const elapsedSeconds = ref(820);
+const passengerStatus = ref("Arrived");
+const showPanicAlert = ref(false);
 
-let timer = null;
 let map = null;
+let timer = null;
 
-const panicEvents = ref([]);
+const panicEvents = ref([
+  {
+    id: 1,
+    title: "Panic detected",
+    time: "12:09 PM",
+    type: "danger",
+    icon: "ti ti-alert-triangle",
+  },
+]);
 
 const events = ref([
   {
+    id: 5,
+    title: "Passenger Arrived",
+    time: "12:10 PM",
+    type: "arrival",
+    icon: "ti ti-map-pin-check",
+  },
+  {
+    id: 4,
+    title: "Movement resumed",
+    time: "12:10 PM",
+    type: "success",
+    icon: "ti ti-check",
+  },
+  {
+    id: 3,
+    title: "Panic cleared",
+    time: "12:10 PM",
+    type: "success",
+    icon: "ti ti-check",
+  },
+  {
+    id: 2,
+    title: "Panic detected",
+    time: "12:09 PM",
+    type: "danger faded",
+    icon: "ti ti-alert-triangle",
+  },
+  {
     id: 1,
-    title: "Trip ready",
-    time: "Waiting",
+    title: "Trip started",
+    time: "12:03 PM",
     type: "neutral",
     icon: "ti ti-clock",
   },
 ]);
 
-const visibleEvents = computed(() => events.value.slice(0, 5));
+const visibleEvents = computed(() => events.value);
+
+const passengerStatusClass = computed(() => {
+  if (passengerStatus.value === "Arrived") return "arrived";
+  if (passengerStatus.value === "Panic") return "panic";
+  if (passengerStatus.value === "Not Moving") return "danger";
+  return "moving";
+});
 
 const formattedDuration = computed(() => {
   const hours = String(Math.floor(elapsedSeconds.value / 3600)).padStart(2, "0");
@@ -161,95 +182,14 @@ const formattedDuration = computed(() => {
   return `${hours}:${minutes}:${seconds}`;
 });
 
-const startTrip = () => {
-  tripStarted.value = true;
-  elapsedSeconds.value = 0;
-  shareableLink.value = `${window.location.origin}/sharedview`;
-
-  events.value = [
-    {
-      id: Date.now(),
-      title: "Trip started",
-      time: "12:03 PM",
-      type: "neutral",
-      icon: "ti ti-clock",
-    },
-    ...events.value,
-  ];
-
-  timer = setInterval(() => {
-    elapsedSeconds.value += 1;
-  }, 1000);
-
-  // Demo panic event so the UI matches your Figma state.
-  setTimeout(() => {
-    addPanicEvent();
-  }, 2500);
-};
-
-const addPanicEvent = () => {
-  latestAlert.value = "Panic event at 12:09 PM detected";
-
-  const panic = {
-    id: Date.now(),
-    title: "Panic detected",
-    time: "12:09 PM",
-    type: "danger",
-    icon: "ti ti-alert-triangle",
-  };
-
-  panicEvents.value.push(panic);
-
-  events.value = [
-    {
-      id: Date.now() + 1,
-      title: "Panic cleared",
-      time: "12:10 PM",
-      type: "success",
-      icon: "ti ti-check",
-    },
-    {
-      id: Date.now() + 2,
-      title: "Movement resumed",
-      time: "12:10 PM",
-      type: "success",
-      icon: "ti ti-check",
-    },
-    panic,
-    ...events.value,
-  ];
-};
-
-const copyLink = async () => {
-  await navigator.clipboard.writeText(shareableLink.value);
-  copied.value = true;
-  setTimeout(() => {
-    copied.value = false;
-  }, 1800);
-};
-
-const endTrip = () => {
-  tripStarted.value = false;
-  latestAlert.value = "";
-  clearInterval(timer);
-  timer = null;
-
-  events.value = [
-    {
-      id: Date.now(),
-      title: "Trip ended",
-      time: "Now",
-      type: "neutral",
-      icon: "ti ti-flag",
-    },
-    ...events.value,
-  ];
+const callPassenger = () => {
+  alert("Calling passenger...");
 };
 
 const initMap = async () => {
   await nextTick();
 
-  map = L.map("home-map", {
+  map = L.map("shared-map", {
     zoomControl: false,
   }).setView([14.5869, 121.0568], 16);
 
@@ -258,12 +198,16 @@ const initMap = async () => {
     attribution: "© OpenStreetMap",
   }).addTo(map);
 
-  L.marker([14.5869, 121.0568]).addTo(map).bindPopup("SM Megamall");
+  L.marker([14.5869, 121.0568]).addTo(map).bindPopup("Passenger location");
   L.marker([14.5897, 121.0598]).addTo(map).bindPopup("Destination");
 };
 
 onMounted(() => {
   initMap();
+
+  timer = setInterval(() => {
+    elapsedSeconds.value += 1;
+  }, 1000);
 });
 
 onBeforeUnmount(() => {
@@ -273,7 +217,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.live-trip-shell {
+.shared-trip-shell {
   height: 100vh;
   background: #f4f4f2;
   padding: 26px 32px;
@@ -282,7 +226,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.trip-layout {
+.shared-layout {
   height: calc(100vh - 52px);
   display: grid;
   grid-template-columns: 286px minmax(520px, 1fr) 360px;
@@ -356,6 +300,26 @@ onBeforeUnmount(() => {
   flex: 0 0 auto;
 }
 
+.event-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.event-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.event-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.event-scroll::-webkit-scrollbar-thumb {
+  background: #9a9a9a;
+  border-radius: 999px;
+}
+
 .event-card {
   display: flex;
   align-items: center;
@@ -394,6 +358,16 @@ onBeforeUnmount(() => {
   color: #176b2c;
 }
 
+.event-card.arrival {
+  background: #1f1f1f;
+  color: #31ff62;
+}
+
+.event-card.arrival .event-icon {
+  background: #dafcdc;
+  color: #168b39;
+}
+
 .event-card.danger {
   background: #ffc6c6;
   color: #201010;
@@ -404,6 +378,10 @@ onBeforeUnmount(() => {
   color: #9d1414;
 }
 
+.event-card.faded {
+  opacity: 0.45;
+}
+
 .event-card.neutral {
   background: #d4d4d4;
   color: #222;
@@ -412,26 +390,6 @@ onBeforeUnmount(() => {
 .event-card.neutral .event-icon {
   background: #bcbcbc;
   color: #777;
-}
-
-.event-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-.event-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.event-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.event-scroll::-webkit-scrollbar-thumb {
-  background: #9a9a9a;
-  border-radius: 999px;
 }
 
 .map-panel {
@@ -469,49 +427,29 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-.right-panel {
+.right-column {
+  width: 100%;
+  max-width: 360px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.current-trip-card {
   background: #1f1f1f;
   color: white;
   border-radius: 32px;
   padding: 38px 28px 30px;
   display: flex;
   flex-direction: column;
-  align-self: start;
-  min-height: 0;
-  width: 100%;
-  max-width: 360px;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.location-card,
-.location-card > div {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-}
-
-.location-card strong,
-.location-card input {
-  text-align: left;
-}
-.share-box,
-.primary-action,
-.secondary-action {
-  box-sizing: border-box;
-}
-
-.trip-meta {
-  gap: 14px;
-  overflow: hidden;
-}
-
-.trip-meta span {
-  white-space: nowrap;
-  font-size: 10px;
-}
-
-.right-panel h2 {
+.current-trip-card h2 {
   margin: 0 0 16px;
   color: #31ff62;
   font-size: 18px;
@@ -528,29 +466,25 @@ onBeforeUnmount(() => {
   justify-content: space-between;
 }
 
-.location-card strong,
-.location-card input {
+.location-card > div {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.location-card strong {
   display: block;
   width: 100%;
   color: white;
   font-size: 14px;
   font-weight: 800;
+  text-align: left;
 }
 
 .location-card span {
   display: block;
   color: #64ff7d;
   font-size: 8px;
-}
-
-.location-card input {
-  background: transparent;
-  border: 0;
-  outline: none;
-}
-
-.location-card input::placeholder {
-  color: #cfcfcf;
 }
 
 .location-card i {
@@ -576,9 +510,16 @@ onBeforeUnmount(() => {
 .trip-meta {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   color: #d8f7dc;
   font-size: 10px;
-  margin: 14px 0 22px;
+  margin: 14px 0 0;
+  overflow: hidden;
+}
+
+.trip-meta span {
+  white-space: nowrap;
+  font-size: 10px;
 }
 
 .trip-meta i {
@@ -586,45 +527,83 @@ onBeforeUnmount(() => {
   margin-right: 4px;
 }
 
-.share-box {
-  height: 64px;
-  border-radius: 6px;
-  background: #6d9275;
-  color: #dfffe4;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  font-size: 11px;
-  padding: 10px;
-  margin-bottom: 22px;
-  word-break: break-all;
+.passenger-status {
+  background: transparent;
+  padding: 0 4px;
 }
 
-.primary-action,
-.secondary-action {
-  width: 75%;
-  align-self: center;
-  border: 0;
-  border-radius: 6px;
-  padding: 9px 12px;
+.status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.status-heading h3 {
+  margin: 0;
+  font-size: 15px;
   font-weight: 900;
-  cursor: pointer;
 }
 
-.primary-action {
+.status-pill {
+  min-width: 88px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid transparent;
+}
+
+.status-pill span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.status-pill.arrived {
+  background: #baf5c5;
+  color: #168b39;
+  border-color: #62c875;
+}
+
+.status-pill.arrived span {
+  background: #168b39;
+}
+
+.status-pill.panic,
+.status-pill.danger {
+  background: #ffc6c6;
+  color: #b00000;
+  border-color: #ef5350;
+}
+
+.status-pill.panic span,
+.status-pill.danger span {
+  background: #b00000;
+}
+
+.status-pill.moving {
+  background: #d8ffd1;
+  color: #168b39;
+}
+
+.status-pill.moving span {
+  background: #168b39;
+}
+
+.call-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
   background: #31ff62;
   color: #000;
-}
-
-.primary-action:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.secondary-action {
-  margin-top: 14px;
-  background: white;
-  color: #168b39;
+  padding: 11px 14px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 @media (max-width: 1000px) {
@@ -637,25 +616,27 @@ onBeforeUnmount(() => {
     overflow-y: auto;
   }
 
-  .live-trip-shell {
+  .shared-trip-shell {
     height: auto;
     min-height: 100vh;
     padding: 18px;
     overflow: visible;
   }
 
-  .trip-layout {
+  .shared-layout {
     height: auto;
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
   }
 
-  .right-panel {
+  .right-column {
     order: 1;
     width: 100%;
     max-width: none;
-    align-self: stretch;
+  }
+
+  .current-trip-card {
     border-radius: 24px;
     padding: 28px 22px;
   }
@@ -700,16 +681,6 @@ onBeforeUnmount(() => {
     font-size: 30px;
   }
 
-  .trip-meta {
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .primary-action,
-  .secondary-action {
-    width: 100%;
-  }
-
   .map-alert {
     width: calc(100% - 36px);
     left: 18px;
@@ -722,25 +693,21 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 600px) {
-  .live-trip-shell {
+  .shared-trip-shell {
     padding: 12px;
   }
 
-  .right-panel {
+  .current-trip-card {
     border-radius: 20px;
     padding: 24px 18px;
   }
 
-  .right-panel h2 {
+  .current-trip-card h2 {
     font-size: 20px;
   }
 
   .location-card {
     min-height: 58px;
-  }
-
-  .location-card input {
-    font-size: 14px;
   }
 
   .map-panel {
@@ -772,9 +739,10 @@ onBeforeUnmount(() => {
     max-height: 230px;
   }
 
-  .share-box {
-    height: auto;
-    min-height: 64px;
+  .status-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
   }
 }
 </style>
