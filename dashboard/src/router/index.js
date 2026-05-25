@@ -4,7 +4,7 @@ import { auth } from "../firebase";
 import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
-import HardwareTest from "../views/testing-ui/HardwareTest.vue";
+import HardwareTest from "../views/testing-ui/HardwareTest2.vue";
 
 const routes = [
   {
