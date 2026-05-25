@@ -7,97 +7,87 @@ const router = useRouter()
 const tabs = [
   {
     name: 'LiveMap',
-    path: '/live-map',
+    path: '/home',
     label: 'Live Map',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="3"/>
-            <line x1="12" y1="2" x2="12" y2="5"/>
-            <line x1="12" y1="19" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="5" y2="12"/>
-            <line x1="19" y1="12" x2="22" y2="12"/>
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21s-6-5.33-6-11a6 6 0 0 1 12 0c0 5.67-6 11-6 11z"/>
+            <circle cx="12" cy="10" r="2.5"/>
           </svg>`,
   },
   {
     name: 'TripHistory',
     path: '/trip-history',
     label: 'Trip History',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5"/>
+            <path d="M21 3l-7 7"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <path d="M8 12h4"/>
+            <path d="M8 16h8"/>
           </svg>`,
   },
   {
     name: 'Notifications',
     path: '/notifications',
     label: 'Notifications',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>`,
-  },
-  {
-    name: 'AccountSettings',
-    path: '/account-settings',
-    label: 'Account Settings',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
           </svg>`,
   },
 ]
 
 const isActive = (path) => route.path === path
-
 const navigate = (path) => router.push(path)
 </script>
 
 <template>
-  <footer style="
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 50;
-    display: flex;
-    align-items: stretch;
-    height: 52px;
-    background: #111111;
-    border-top: 1px solid #222;
-  ">
+  <footer
+    style="
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45px;
+      display: flex;
+      background: #f3f3f3;
+      border-top: 1px solid #dcdcdc;
+      z-index: 999;
+      font-family: Inter, sans-serif;
+    "
+  >
     <button
       v-for="tab in tabs"
       :key="tab.name"
       @click="navigate(tab.path)"
       :style="{
         flex: 1,
+        border: 'none',
+        background: isActive(tab.path) ? '#1E1E1E' : '#f3f3f3',
+        color: isActive(tab.path) ? '#3BFF65' : '#1a1a1a',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '8px',
-        border: 'none',
+        gap: '10px',
+        fontSize: '15px',
+        fontWeight: '700',
         cursor: 'pointer',
-        fontFamily: '\'Segoe UI\', Helvetica, Arial, sans-serif',
-        fontSize: '12px',
-        fontWeight: isActive(tab.path) ? '600' : '400',
-        letterSpacing: '0.2px',
-        transition: 'background 0.15s, color 0.15s',
-        background: isActive(tab.path) ? '#1a1a1a' : 'transparent',
-        color: isActive(tab.path) ? '#2ecc71' : '#888',
-        borderTop: isActive(tab.path) ? '2px solid #2ecc71' : '2px solid transparent',
-        paddingBottom: '2px',
+        transition: 'all 0.2s ease',
+        borderRight: '1px solid #dcdcdc',
       }"
     >
-      <!-- Icon -->
       <span
         v-html="tab.icon"
-        :style="{ display: 'flex', alignItems: 'center', color: isActive(tab.path) ? '#2ecc71' : '#888' }"
+        :style="{
+          display: 'flex',
+          alignItems: 'center',
+          color: isActive(tab.path) ? '#3BFF65' : '#1a1a1a',
+        }"
       ></span>
-      <!-- Label -->
+
       <span>{{ tab.label }}</span>
     </button>
   </footer>

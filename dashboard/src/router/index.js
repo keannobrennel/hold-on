@@ -5,14 +5,13 @@ import { onAuthStateChanged } from "firebase/auth";
 import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
-import LiveMap from "../views/LiveMap.vue";
 
 import UserLayout from "../layouts/UserLayout.vue";
 
 const routes = [
   {
     path: "/",
-    redirect: "/login",
+    redirect: "/home",
   },
 
   {
@@ -37,12 +36,6 @@ const routes = [
         path: "trip/:tripId",
         name: "Trip",
         component: TripView,
-      },
-
-      {
-        path: "live-map",
-        name: "LiveMap",
-        component: LiveMap,
       },
     ],
   },
