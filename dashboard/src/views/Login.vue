@@ -1,49 +1,35 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebase";
 import logoImg from "../assets/logo.png";
 
 const router = useRouter();
 
-const username = ref("");
-const password = ref("");
 const darkMode = ref(false);
-const isLoading = ref(false);
+const isGoogleLoading = ref(false);
 const errorMessage = ref("");
 
 const toggleTheme = () => {
   darkMode.value = !darkMode.value;
 };
 
-const handleLogin = async () => {
-  if (isLoading.value) return;
+const handleGoogleSignIn = async () => {
+  if (isGoogleLoading.value) return;
   errorMessage.value = "";
-  isLoading.value = true;
+  isGoogleLoading.value = true;
   try {
-    await signInWithEmailAndPassword(auth, username.value, password.value);
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
     router.push("/home");
   } catch (error) {
     console.error(error);
-    switch (error.code) {
-      case "auth/user-not-found":
-        errorMessage.value = "User not found";
-        break;
-      case "auth/wrong-password":
-        errorMessage.value = "Incorrect password";
-        break;
-      case "auth/invalid-email":
-        errorMessage.value = "Invalid email";
-        break;
-      case "auth/invalid-credential":
-        errorMessage.value = "Invalid email or password";
-        break;
-      default:
-        errorMessage.value = "Login failed";
+    if (error.code !== "auth/popup-closed-by-user") {
+      errorMessage.value = "Google sign-in failed. Please try again.";
     }
   } finally {
-    isLoading.value = false;
+    isGoogleLoading.value = false;
   }
 };
 </script>
@@ -65,9 +51,6 @@ const handleLogin = async () => {
       </svg>
     </button>
 
-    <!-- DESKTOP: two-column layout -->
-    <template v-if="false"></template>
-
     <!-- LEFT SECTION (desktop only) -->
     <div class="left-section">
       <img :src="logoImg" alt="HoldON" class="logo-left" />
@@ -88,41 +71,26 @@ const handleLogin = async () => {
           <span :class="{ dark: darkMode }">Hold</span><span class="accent">ON</span>
         </h1>
 
-        <!-- INPUTS -->
-        <div class="inputs-wrapper">
-          <input
-            v-model="username"
-            type="email"
-            placeholder="Username"
-            class="input-field"
-            :class="{ dark: darkMode }"
-          />
-          <input
-            v-model="password"
-            type="password"
-            placeholder="Password"
-            class="input-field"
-            :class="{ dark: darkMode }"
-          />
-          <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
-          <button
-            @click="handleLogin"
-            class="login-btn"
-            :class="{ dark: darkMode, loading: isLoading }"
-            :disabled="isLoading"
-          >
-            {{ isLoading ? "Logging In..." : "Log In" }}
-          </button>
-        </div>
+        <!-- ERROR -->
+        <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
 
-        <!-- DIVIDER -->
-        <div class="divider" :class="{ dark: darkMode }"></div>
-
-        <!-- SIGN UP -->
-        <p class="signup-text" :class="{ dark: darkMode }">
-          Don't have an account?
-          <span class="signup-link" @click="router.push('/register')">Sign Up</span>
-        </p>
+        <!-- GOOGLE SIGN IN -->
+        <button
+          @click="handleGoogleSignIn"
+          class="google-btn"
+          :class="{ dark: darkMode, loading: isGoogleLoading }"
+          :disabled="isGoogleLoading"
+        >
+          <svg v-if="!isGoogleLoading" width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            <path fill="none" d="M0 0h48v48H0z"/>
+          </svg>
+          <span class="google-spinner" v-else></span>
+          {{ isGoogleLoading ? "Signing in..." : "Continue with Google" }}
+        </button>
 
       </div>
     </div>
@@ -134,12 +102,6 @@ const handleLogin = async () => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-input::placeholder {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  color: #8b8b8b;
-}
 
 /* PAGE WRAPPER */
 .page-wrapper {
@@ -206,6 +168,9 @@ input::placeholder {
 .form-container {
   width: 100%;
   max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 /* TOP LOGO — hidden on desktop */
@@ -232,97 +197,72 @@ input::placeholder {
   font-size: 100px;
   font-weight: 700;
   line-height: 0.95;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   letter-spacing: -4px;
 }
 .brand-name span { color: #000000; transition: color 0.3s ease; }
 .brand-name span.dark { color: #FFFFFF; }
 .brand-name .accent { color: #39FF5A; }
 
-/* INPUTS */
-.inputs-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.input-field {
-  width: 85%;
-  height: 46px;
-  border: none;
-  outline: none;
-  border-radius: 10px;
-  padding: 0 16px;
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  background: #DDF2D3;
-  color: #000000;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-  transition: background 0.3s ease;
-}
-.input-field.dark { background: #F5F5F5; }
-
+/* ERROR */
 .error-msg {
   color: #ff4d4f;
   font-size: 13px;
-  margin-top: -5px;
+  margin-bottom: 10px;
 }
 
-.login-btn {
-  width: 140px;
-  height: 42px;
-  border: none;
+/* GOOGLE BUTTON */
+.google-btn {
+  width: 85%;
+  height: 46px;
+  border: 1.5px solid #CFCFCF;
   border-radius: 10px;
-  margin: 6px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  background: #000000;
-  color: #39FF5A;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  background: #FFFFFF;
+  color: #000000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   transition: all 0.25s ease;
-  display: block;
 }
-.login-btn.dark { background: #39FF5A; color: #000000; }
-.login-btn.loading { cursor: not-allowed; opacity: 0.7; }
+.google-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
+.google-btn.dark {
+  background: #2A2A2A;
+  color: #FFFFFF;
+  border-color: #5C5C5C;
+}
+.google-btn.loading { cursor: not-allowed; opacity: 0.7; }
 
-/* DIVIDER */
-.divider {
-  width: 100%;
-  height: 1px;
-  margin-top: 22px;
-  margin-bottom: 14px;
-  background: #CFCFCF;
-  transition: background 0.3s ease;
+/* GOOGLE SPINNER */
+.google-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #CFCFCF;
+  border-top-color: #39FF5A;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
-.divider.dark { background: #5C5C5C; }
-
-/* SIGNUP */
-.signup-text {
-  text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: #777777;
-  transition: color 0.3s ease;
-}
-.signup-text.dark { color: #FFFFFF; }
-.signup-link {
-  color: #39FF5A;
-  font-weight: 700;
-  cursor: pointer;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* ─── TABLET & MOBILE (≤1000px): stacked, centered ─── */
+/* ─── TABLET & MOBILE (≤1000px) ─── */
 @media (max-width: 1000px) {
   .page-wrapper {
     flex-direction: column;
     align-items: center;
     justify-content: center;
   }
-  .left-section {
-    display: none;
-  }
+  .left-section { display: none; }
   .right-section {
     flex: unset;
     width: 100%;
@@ -334,56 +274,28 @@ input::placeholder {
   .form-container {
     width: 100%;
     max-width: 100%;
-    display: flex;
-    flex-direction: column;
     align-items: center;
     text-align: center;
   }
-  .logo-top {
-    display: block;
-  }
-  .welcome-text {
-    font-size: 20px;
-  }
+  .logo-top { display: block; }
+  .welcome-text { font-size: 20px; }
   .brand-name {
     font-size: 76px;
     letter-spacing: -3px;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
-  .inputs-wrapper {
-    width: 100%;
-    align-items: center;
-  }
-  .input-field {
-    width: 100%;
-  }
-  .login-btn {
-    width: 100%;
-    margin-top: 4px;
-  }
-  .divider {
-    width: 100%;
-  }
-  .theme-toggle {
-    top: 16px;
-    right: 16px;
-  }
+  .google-btn { width: 100%; }
+  .theme-toggle { top: 16px; right: 16px; }
 }
 
-/* ─── MOBILE (≤480px): tighter sizing ─── */
+/* ─── MOBILE (≤480px) ─── */
 @media (max-width: 480px) {
-  .right-section {
-    padding: 72px 24px 40px;
-  }
+  .right-section { padding: 72px 24px 40px; }
   .brand-name {
     font-size: 60px;
     letter-spacing: -2px;
   }
-  .welcome-text {
-    font-size: 17px;
-  }
-  .logo-top {
-    width: 72px;
-  }
+  .welcome-text { font-size: 17px; }
+  .logo-top { width: 72px; }
 }
 </style>
