@@ -1,9 +1,9 @@
-#ifndef CONFIG_H
+#define CONFIG_H
 #define CONFIG_H
 
 // WiFi
-#define WIFI_SSID "your-wifi-ssid"
-#define WIFI_PASSWORD "your-wifi-password"
+#define WIFI_SSID "bbrouter"
+#define WIFI_PASSWORD "107149090195"
 
 // MQTT
 #define MQTT_HOST "1b2963ffcb6749ec911eab095a9bf97a.s1.eu.hivemq.cloud"
