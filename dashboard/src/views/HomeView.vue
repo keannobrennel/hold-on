@@ -1,5 +1,8 @@
 <template>
   <main class="live-trip-shell">
+    <!-- HEADER SLOT: replace this div with <AppHeader /> when your groupmate finishes the header -->
+    <div class="layout-header-slot"></div>
+
     <section class="trip-layout">
       <!-- LEFT PANEL -->
       <aside class="left-panel">
@@ -64,7 +67,9 @@
             />
             <span>Pick-Up</span>
           </div>
-          <i class="ti ti-current-location"></i>
+          <span class="svg-icon location-svg-icon pickup-svg-icon" aria-hidden="true">
+          <!-- PASTE PICK-UP SVG HERE -->
+          </span>
         </div>
 
         <div class="route-dots"></div>
@@ -78,16 +83,22 @@
             />
             <span>Drop-off</span>
           </div>
-          <i class="ti ti-map-pin"></i>
+          <span class="svg-icon location-svg-icon dropoff-svg-icon" aria-hidden="true">
+          <!-- PASTE DROP-OFF SVG HERE -->
+          </span>
         </div>
 
         <div class="trip-meta">
           <span>
-            <i class="ti ti-clock"></i>
+            <span class="svg-icon meta-svg-icon eta-svg-icon" aria-hidden="true">
+              <!-- PASTE ETA SVG HERE -->
+            </span>
             ETA {{ tripStarted ? eta : "--:--" }}
           </span>
           <span>
-            <i class="ti ti-route"></i>
+            <span class="svg-icon meta-svg-icon distance-svg-icon" aria-hidden="true">
+              <!-- PASTE DISTANCE SVG HERE -->
+            </span>
             DISTANCE {{ tripStarted ? distance : "--" }}
           </span>
         </div>
@@ -117,6 +128,8 @@
         </template>
       </aside>
     </section>
+  <!-- FOOTER SLOT: replace this div with <BottomNav /> when your groupmate finishes the footer/nav -->
+  <div class="layout-footer-slot"></div>
   </main>
 </template>
 
@@ -276,20 +289,32 @@ onBeforeUnmount(() => {
 .live-trip-shell {
   height: 100vh;
   background: #f4f4f2;
-  padding: 26px 32px;
+  padding: 0 32px;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #111;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-header-slot {
+  height: 72px;
+  flex: 0 0 72px;
+}
+
+.layout-footer-slot {
+  height: 72px;
+  flex: 0 0 72px;
 }
 
 .trip-layout {
-  height: calc(100vh - 52px);
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 286px minmax(520px, 1fr) 360px;
   gap: 32px;
   align-items: start;
 }
-
 .left-panel {
   height: 100%;
   min-height: 0;
@@ -299,6 +324,7 @@ onBeforeUnmount(() => {
 }
 
 .stat-card {
+  position: relative;
   border-radius: 8px;
   padding: 14px 14px 16px;
   color: white;
@@ -307,10 +333,14 @@ onBeforeUnmount(() => {
 }
 
 .stat-card p {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  width: 62px;
   margin: 0;
   font-size: 10px;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 .stat-card h1 {
@@ -557,6 +587,33 @@ onBeforeUnmount(() => {
   color: #9dffb0;
 }
 
+.svg-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #9dffb0;
+  flex: 0 0 auto;
+}
+
+.svg-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.location-svg-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 10px;
+}
+
+.meta-svg-icon {
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
 .active-location::before {
   content: "";
   width: 8px;
@@ -625,6 +682,98 @@ onBeforeUnmount(() => {
   margin-top: 14px;
   background: white;
   color: #168b39;
+}
+
+@media (min-width: 1001px) {
+  .live-trip-shell {
+    --left-col: clamp(200px, 15.6vw, 300px);
+    --right-col: clamp(300px, 25.25vw, 485px);
+    --gap: clamp(20px, 1.65vw, 32px);
+    --map-width: clamp(700px, 54vw, 1040px);
+
+    padding: 0 0 0 clamp(24px, 2.5vw, 48px);
+    overflow: hidden;
+  }
+
+  .trip-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: var(--left-col) minmax(0, 1fr) var(--right-col);
+    gap: var(--gap);
+    width: 100%;
+  }
+
+  .left-panel,
+  .map-panel {
+    height: 100%;
+  }
+
+  .map-panel {
+    width: min(var(--map-width), 100%);
+    max-width: 100%;
+    height: 100%;
+    justify-self: center;
+    transform: none;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .right-panel {
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    max-width: var(--right-col);
+    justify-self: end;
+    border-radius: 32px 0 0 32px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: #1f1f1f;
+    padding: clamp(24px, 3.5vh, 32px) clamp(24px, 1.9vw, 36px);
+  }
+
+  .location-card,
+  .share-box,
+  .trip-meta {
+    width: 100%;
+    max-width: 413px;
+  }
+
+  .location-card {
+    min-height: clamp(54px, 7.5vh, 69px);
+  }
+
+  .route-dots {
+    height: clamp(18px, 2.4vh, 24px);
+  }
+
+  .trip-meta {
+    margin: 12px 0 18px;
+    overflow: visible;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .trip-meta span {
+    white-space: nowrap;
+    line-height: 1.2;
+    font-size: 10px;
+  }
+
+  .share-box {
+    height: clamp(72px, 10vh, 110px);
+    margin-bottom: 18px;
+  }
+
+  .primary-action,
+  .secondary-action {
+    width: min(229px, 100%);
+    height: 42px;
+  }
 }
 
 @media (max-width: 1000px) {
