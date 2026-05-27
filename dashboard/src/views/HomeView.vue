@@ -1,6 +1,5 @@
 <template>
   <main class="live-trip-shell">
-    <!-- HEADER SLOT: replace this div with <AppHeader /> when your groupmate finishes the header -->
     <div class="layout-header-slot"></div>
 
     <section class="trip-layout">
@@ -23,31 +22,53 @@
         </div>
 
         <div class="event-section">
-  <h3>EVENT LOGS</h3>
+          <h3>EVENT LOGS</h3>
 
-        <div class="event-scroll">
-          <div
-            v-for="event in visibleEvents"
-            :key="event.id"
-            class="event-card"
-            :class="event.type"
-          >
-            <div class="event-icon">
-              <i :class="event.icon"></i>
-            </div>
-            <div>
-              <strong>{{ event.title }}</strong>
-              <small>{{ event.time }}</small>
+          <div class="event-scroll">
+            <div
+              v-for="event in visibleEvents"
+              :key="event.id"
+              class="event-card"
+              :class="event.type"
+            >
+              <div class="event-icon">
+                <!-- SUCCESS: checkmark -->
+                <svg v-if="event.type === 'success'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <!-- DANGER: alert triangle -->
+                <svg v-else-if="event.type === 'danger'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <!-- NEUTRAL: clock for trip started/ready, flag for trip ended -->
+                <svg v-else-if="event.iconType === 'flag'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                  <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div>
+                <strong>{{ event.title }}</strong>
+                <small>{{ event.time }}</small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </aside>
 
       <!-- CENTER MAP -->
       <section class="map-panel">
         <div v-if="tripStarted && latestAlert" class="map-alert">
-          <i class="ti ti-alert-triangle"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
           {{ latestAlert }}
         </div>
 
@@ -67,8 +88,16 @@
             />
             <span>Pick-Up</span>
           </div>
+          <!-- Pick-up: crosshair/target icon -->
           <span class="svg-icon location-svg-icon pickup-svg-icon" aria-hidden="true">
-          <!-- PASTE PICK-UP SVG HERE -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3"/>
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+            </svg>
           </span>
         </div>
 
@@ -83,21 +112,36 @@
             />
             <span>Drop-off</span>
           </div>
+          <!-- Drop-off: map pin icon -->
           <span class="svg-icon location-svg-icon dropoff-svg-icon" aria-hidden="true">
-          <!-- PASTE DROP-OFF SVG HERE -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
           </span>
         </div>
 
         <div class="trip-meta">
           <span>
+            <!-- ETA: clock icon -->
             <span class="svg-icon meta-svg-icon eta-svg-icon" aria-hidden="true">
-              <!-- PASTE ETA SVG HERE -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
             </span>
             ETA {{ tripStarted ? eta : "--:--" }}
           </span>
           <span>
+            <!-- Distance: motorcycle icon -->
             <span class="svg-icon meta-svg-icon distance-svg-icon" aria-hidden="true">
-              <!-- PASTE DISTANCE SVG HERE -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="5.5" cy="17.5" r="2.5"/>
+                <circle cx="18.5" cy="17.5" r="2.5"/>
+                <path d="M15 6h-3l-2 6H5.5"/>
+                <path d="M9 12h6l2-3h2"/>
+                <path d="M15 6l1.5-3"/>
+              </svg>
             </span>
             DISTANCE {{ tripStarted ? distance : "--" }}
           </span>
@@ -128,8 +172,7 @@
         </template>
       </aside>
     </section>
-  <!-- FOOTER SLOT: replace this div with <BottomNav /> when your groupmate finishes the footer/nav -->
-  <div class="layout-footer-slot"></div>
+    <div class="layout-footer-slot"></div>
   </main>
 </template>
 
@@ -160,7 +203,7 @@ const events = ref([
     title: "Trip ready",
     time: "Waiting",
     type: "neutral",
-    icon: "ti ti-clock",
+    iconType: "clock",
   },
 ]);
 
@@ -170,7 +213,6 @@ const formattedDuration = computed(() => {
   const hours = String(Math.floor(elapsedSeconds.value / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((elapsedSeconds.value % 3600) / 60)).padStart(2, "0");
   const seconds = String(elapsedSeconds.value % 60).padStart(2, "0");
-
   return `${hours}:${minutes}:${seconds}`;
 });
 
@@ -185,7 +227,7 @@ const startTrip = () => {
       title: "Trip started",
       time: "12:03 PM",
       type: "neutral",
-      icon: "ti ti-clock",
+      iconType: "clock",
     },
     ...events.value,
   ];
@@ -194,7 +236,6 @@ const startTrip = () => {
     elapsedSeconds.value += 1;
   }, 1000);
 
-  // Demo panic event so the UI matches your Figma state.
   setTimeout(() => {
     addPanicEvent();
   }, 2500);
@@ -208,7 +249,7 @@ const addPanicEvent = () => {
     title: "Panic detected",
     time: "12:09 PM",
     type: "danger",
-    icon: "ti ti-alert-triangle",
+    iconType: "alert",
   };
 
   panicEvents.value.push(panic);
@@ -219,14 +260,14 @@ const addPanicEvent = () => {
       title: "Panic cleared",
       time: "12:10 PM",
       type: "success",
-      icon: "ti ti-check",
+      iconType: "check",
     },
     {
       id: Date.now() + 2,
       title: "Movement resumed",
       time: "12:10 PM",
       type: "success",
-      icon: "ti ti-check",
+      iconType: "check",
     },
     panic,
     ...events.value,
@@ -253,7 +294,7 @@ const endTrip = () => {
       title: "Trip ended",
       time: "Now",
       type: "neutral",
-      icon: "ti ti-flag",
+      iconType: "flag",
     },
     ...events.value,
   ];
@@ -407,11 +448,17 @@ onBeforeUnmount(() => {
 }
 
 .event-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
+  flex: 0 0 auto;
+}
+
+.event-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 .event-card.success {
@@ -602,14 +649,14 @@ onBeforeUnmount(() => {
 }
 
 .location-svg-icon {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   margin-left: 10px;
 }
 
 .meta-svg-icon {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   margin-right: 4px;
   vertical-align: -1px;
 }
@@ -657,6 +704,7 @@ onBeforeUnmount(() => {
   word-break: break-all;
 }
 
+/* ── BUTTONS: font-weight 500 ── */
 .primary-action,
 .secondary-action {
   width: 75%;
@@ -664,7 +712,7 @@ onBeforeUnmount(() => {
   border: 0;
   border-radius: 6px;
   padding: 9px 12px;
-  font-weight: 900;
+  font-weight: 500;
   cursor: pointer;
 }
 
