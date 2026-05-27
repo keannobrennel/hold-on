@@ -1,12 +1,9 @@
 <template>
   <div class="notifications-page">
 
-    <!-- HEADER SLOT: replace this div with <AppHeader /> when your groupmate finishes the header -->
     <div class="layout-header-slot"></div>
 
-    <!-- Main Content -->
     <div class="main-content">
-      <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-header">
           <span class="sidebar-title">Quick Actions</span>
@@ -37,7 +34,6 @@
         </ul>
       </aside>
 
-      <!-- Notifications Panel -->
       <section class="notifications-panel">
         <div class="panel-header">
           <h2 class="panel-title">{{ panelTitle }}</h2>
@@ -48,7 +44,6 @@
         </div>
 
         <div class="notifications-list">
-          <!-- Today -->
           <div v-if="todayNotifications.length" class="notif-group">
             <div class="group-label">Today</div>
             <div v-for="notif in todayNotifications" :key="notif.id" :class="['notif-card', notif.type, { unread: notif.unread }]">
@@ -65,7 +60,6 @@
             </div>
           </div>
 
-          <!-- Yesterday -->
           <div v-if="yesterdayNotifications.length" class="notif-group">
             <div class="group-label">Yesterday</div>
             <div v-for="notif in yesterdayNotifications" :key="notif.id" :class="['notif-card', notif.type, { unread: notif.unread }]">
@@ -85,7 +79,6 @@
       </section>
     </div>
 
-    <!-- FOOTER SLOT: replace this div with <BottomNav /> when your groupmate finishes the footer/nav -->
     <div class="layout-footer-slot"></div>
 
   </div>
@@ -151,7 +144,7 @@ export default {
 .main-content { display: flex; flex: 1; overflow: hidden; padding: 24px; gap: 24px; min-height: 0; }
 
 /* Sidebar — widened from 220px to 270px with slightly more padding */
-.sidebar { width: 270px; background: #fff; border-radius: 14px; padding: 22px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); flex-shrink: 0; height: fit-content; }
+.sidebar { width: 270px; background: #fff; border-radius: 14px; padding: 22px 20px; box-shadow: 0 4px 4px rgba(0,0,0,0.1); flex-shrink: 0; height: fit-content; }
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .sidebar-title { font-size: 15px; font-weight: 700; color: #222; }
 .clear-all-btn { background: none; border: none; color: #4CAF50; font-size: 13px; cursor: pointer; font-weight: 500; font-family: 'Poppins', sans-serif; }
@@ -168,7 +161,7 @@ export default {
 .nav-item.active .nav-badge { background: #4CAF50; color: #fff; }
 
 /* Notifications Panel */
-.notifications-panel { flex: 1; background: #fff; border-radius: 14px; padding: 24px 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow-y: auto; }
+.notifications-panel { flex: 1; background: #fff; border-radius: 14px; padding: 24px 28px; box-shadow: 0 4px 4px rgba(0,0,0,0.1); overflow-y: auto; }
 .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .panel-title { font-size: 22px; font-weight: 800; color: #111; }
 .mark-read-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #4CAF50; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Poppins', sans-serif; }

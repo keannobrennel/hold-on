@@ -38,7 +38,6 @@ const routes = [
         path: "/notifications",
         name: "Notifications",
         component: NotificationsView,
-        meta: { requiresAuth: true },
     },
     {
         path: "/trip-history",
