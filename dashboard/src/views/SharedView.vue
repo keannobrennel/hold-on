@@ -659,7 +659,7 @@ onBeforeUnmount(() => {
   background: #31ff62;
   color: #000;
   padding: 11px 14px;
-  font-weight: 900;
+  font-weight: 500;
   cursor: pointer;
 }
 
