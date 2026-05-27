@@ -5,8 +5,10 @@ import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
 import SharedView from "../views/SharedView.vue";
+import NotificationsView from "../views/Notifications.vue";
 
-const routes = [{
+const routes = [
+    {
         path: "/",
         redirect: "/login",
     },
@@ -30,6 +32,12 @@ const routes = [{
         path: "/trip/:tripId",
         name: "Trip",
         component: TripView,
+    },
+    {
+        path: "/notifications",
+        name: "Notifications",
+        component: NotificationsView,
+        meta: { requiresAuth: true },
     },
 ];
 
