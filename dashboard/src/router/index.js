@@ -6,6 +6,7 @@ import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
 import SharedView from "../views/SharedView.vue";
 import NotificationsView from "../views/Notifications.vue";
+import TripHistoryView from "../views/TripHistory.vue";
 
 const routes = [
     {
@@ -38,6 +39,11 @@ const routes = [
         name: "Notifications",
         component: NotificationsView,
         meta: { requiresAuth: true },
+    },
+    {
+        path: "/trip-history",
+        name: "TripHistory",
+        component: TripHistoryView,
     },
 ];
 
