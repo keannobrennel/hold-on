@@ -221,7 +221,7 @@ const formattedDuration = computed(() => {
 const startTrip = () => {
   tripStarted.value = true;
   elapsedSeconds.value = 0;
-  shareableLink.value = `${window.location.origin}/sharedview`;
+  shareableLink.value = `${window.location.origin}/shared`;
 
   events.value = [
     {
