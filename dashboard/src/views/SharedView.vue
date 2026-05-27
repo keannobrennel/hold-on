@@ -1,6 +1,5 @@
 <template>
   <main class="shared-trip-shell">
-    <!-- HEADER SLOT: replace this div with <AppHeader /> when your groupmate finishes the header -->
     <div class="layout-header-slot"></div>
     <section class="shared-layout">
       <!-- LEFT PANEL -->
@@ -28,7 +27,31 @@
               :class="event.type"
             >
               <div class="event-icon">
-                <i :class="event.icon"></i>
+                <!-- arrival: map-pin check -->
+                <svg v-if="event.iconType === 'arrival'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <polyline points="9 10 11 12 15 8"/>
+                </svg>
+                <!-- success: checkmark -->
+                <svg v-else-if="event.iconType === 'check'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <!-- danger: alert triangle -->
+                <svg v-else-if="event.iconType === 'alert'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <!-- flag: trip ended -->
+                <svg v-else-if="event.iconType === 'flag'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                  <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <!-- default: clock -->
+                <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
               </div>
               <div>
                 <strong>{{ event.title }}</strong>
@@ -42,7 +65,11 @@
       <!-- CENTER MAP -->
       <section class="map-panel">
         <div v-if="showPanicAlert" class="map-alert">
-          <i class="ti ti-alert-triangle"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
           Panic event at 12:09 PM detected
         </div>
 
@@ -54,38 +81,63 @@
         <div class="current-trip-card">
           <h2>CURRENT TRIP</h2>
 
-          <div class="location-card active-location">
+          <div class="location-card">
+            <span class="dot dot--active" aria-hidden="true"></span>
             <div>
               <strong>{{ pickupLocation }}</strong>
               <span>Pick-Up</span>
             </div>
+            <!-- Pick-up: crosshair/target icon -->
             <span class="svg-icon location-svg-icon pickup-svg-icon" aria-hidden="true">
-            <!-- PASTE PICK-UP SVG HERE -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+              </svg>
             </span>
           </div>
 
           <div class="route-dots"></div>
 
           <div class="location-card">
+            <span class="dot dot--inactive" aria-hidden="true"></span>
             <div>
               <strong>{{ destination }}</strong>
               <span>Drop-off</span>
             </div>
+            <!-- Drop-off: map pin icon -->
             <span class="svg-icon location-svg-icon dropoff-svg-icon" aria-hidden="true">
-            <!-- PASTE DROP-OFF SVG HERE -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
             </span>
           </div>
 
           <div class="trip-meta">
             <span>
+              <!-- ETA: clock icon -->
               <span class="svg-icon meta-svg-icon eta-svg-icon" aria-hidden="true">
-                <!-- PASTE ETA SVG HERE -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
               </span>
               ETA {{ eta }}
             </span>
             <span>
+              <!-- Distance: motorcycle icon -->
               <span class="svg-icon meta-svg-icon distance-svg-icon" aria-hidden="true">
-                <!-- PASTE DISTANCE SVG HERE -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="5.5" cy="17.5" r="2.5"/>
+                  <circle cx="18.5" cy="17.5" r="2.5"/>
+                  <path d="M15 6h-3l-2 6H5.5"/>
+                  <path d="M9 12h6l2-3h2"/>
+                  <path d="M15 6l1.5-3"/>
+                </svg>
               </span>
               DISTANCE {{ distance }}
             </span>
@@ -107,8 +159,7 @@
         </div>
       </aside>
     </section>
-  <!-- FOOTER SLOT: replace this div with <BottomNav /> when your groupmate finishes the footer/nav -->
-  <div class="layout-footer-slot"></div>
+    <div class="layout-footer-slot"></div>
   </main>
 </template>
 
@@ -135,7 +186,7 @@ const panicEvents = ref([
     title: "Panic detected",
     time: "12:09 PM",
     type: "danger",
-    icon: "ti ti-alert-triangle",
+    iconType: "alert",
   },
 ]);
 
@@ -145,35 +196,35 @@ const events = ref([
     title: "Passenger Arrived",
     time: "12:10 PM",
     type: "arrival",
-    icon: "ti ti-map-pin-check",
+    iconType: "arrival",
   },
   {
     id: 4,
     title: "Movement resumed",
     time: "12:10 PM",
     type: "success",
-    icon: "ti ti-check",
+    iconType: "check",
   },
   {
     id: 3,
     title: "Panic cleared",
     time: "12:10 PM",
     type: "success",
-    icon: "ti ti-check",
+    iconType: "check",
   },
   {
     id: 2,
     title: "Panic detected",
     time: "12:09 PM",
     type: "danger faded",
-    icon: "ti ti-alert-triangle",
+    iconType: "alert",
   },
   {
     id: 1,
     title: "Trip started",
     time: "12:03 PM",
     type: "neutral",
-    icon: "ti ti-clock",
+    iconType: "clock",
   },
 ]);
 
@@ -190,7 +241,6 @@ const formattedDuration = computed(() => {
   const hours = String(Math.floor(elapsedSeconds.value / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((elapsedSeconds.value % 3600) / 60)).padStart(2, "0");
   const seconds = String(elapsedSeconds.value % 60).padStart(2, "0");
-
   return `${hours}:${minutes}:${seconds}`;
 });
 
@@ -216,7 +266,6 @@ const initMap = async () => {
 
 onMounted(() => {
   initMap();
-
   timer = setInterval(() => {
     elapsedSeconds.value += 1;
   }, 1000);
@@ -371,11 +420,17 @@ onBeforeUnmount(() => {
 }
 
 .event-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
+  flex: 0 0 auto;
+}
+
+.event-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 .event-card.success {
@@ -500,6 +555,10 @@ onBeforeUnmount(() => {
   flex: 1;
   min-width: 0;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .location-card strong {
@@ -509,16 +568,34 @@ onBeforeUnmount(() => {
   font-size: 14px;
   font-weight: 800;
   text-align: left;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
 }
 
-.location-card span {
+.location-card > div > span {
   display: block;
   color: #64ff7d;
   font-size: 8px;
+  line-height: 1.2;
+  margin: 0;
 }
 
-.location-card i {
-  color: #9dffb0;
+/* Dot circles */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  margin-right: 10px;
+}
+
+.dot--active {
+  background: #31ff62;
+}
+
+.dot--inactive {
+  background: #888;
 }
 
 .svg-icon {
@@ -536,26 +613,16 @@ onBeforeUnmount(() => {
 }
 
 .location-svg-icon {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   margin-left: 10px;
 }
 
 .meta-svg-icon {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   margin-right: 4px;
   vertical-align: -1px;
-}
-
-.active-location::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  background: #31ff62;
-  border-radius: 999px;
-  margin-right: 10px;
-  flex: 0 0 auto;
 }
 
 .route-dots {
@@ -577,11 +644,6 @@ onBeforeUnmount(() => {
 .trip-meta span {
   white-space: nowrap;
   font-size: 10px;
-}
-
-.trip-meta i {
-  color: #9dffb0;
-  margin-right: 4px;
 }
 
 .passenger-status {
@@ -652,6 +714,7 @@ onBeforeUnmount(() => {
   background: #168b39;
 }
 
+/* Button: font-weight 500 */
 .call-btn {
   width: 100%;
   border: 0;
