@@ -1,30 +1,43 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView.vue";
 import TripView from "../views/TripView.vue";
+
+import UserLayout from "../layouts/UserLayout.vue";
 
 const routes = [
   {
     path: "/",
     redirect: "/login",
   },
+
   {
     path: "/login",
     name: "Login",
     component: LoginView,
   },
+
   {
-    path: "/home",
-    name: "Home",
-    component: HomeView,
+    path: "/",
+    component: UserLayout,
     meta: { requiresAuth: true },
-  },
-  {
-    path: "/trip/:tripId",
-    name: "Trip",
-    component: TripView,
+
+    children: [
+      {
+        path: "home",
+        name: "Home",
+        component: HomeView,
+      },
+
+      {
+        path: "trip/:tripId",
+        name: "Trip",
+        component: TripView,
+      },
+    ],
   },
 ];
 
@@ -33,13 +46,22 @@ const router = createRouter({
   routes,
 });
 
-// Guard: redirect to login if not authenticated
-router.beforeEach((to, from, next) => {
-  const user = auth.currentUser;
-  if (to.meta.requiresAuth && !user) {
-    next("/login");
-  } else {
-    next();
+// Wait for Firebase auth state
+const getCurrentUser = () =>
+  new Promise((resolve) => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      unsub();
+      resolve(user);
+    });
+  });
+
+router.beforeEach(async (to) => {
+  if (to.meta.requiresAuth) {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return "/login";
+    }
   }
 });
 
