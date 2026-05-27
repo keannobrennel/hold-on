@@ -79,7 +79,8 @@
       <aside class="right-panel">
         <h2>CURRENT TRIP</h2>
 
-        <div class="location-card active-location">
+        <div class="location-card">
+          <span class="dot dot--active" aria-hidden="true"></span>
           <div>
             <input
               v-model="pickupLocation"
@@ -104,6 +105,7 @@
         <div class="route-dots"></div>
 
         <div class="location-card">
+          <span class="dot dot--inactive" aria-hidden="true"></span>
           <div>
             <input
               v-model="destination"
@@ -561,11 +563,19 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.location-card,
+.location-card {
+  flex: 1;
+  min-width: 0;
+}
+
 .location-card > div {
   flex: 1;
   min-width: 0;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .location-card strong,
@@ -612,12 +622,17 @@ onBeforeUnmount(() => {
   color: white;
   font-size: 14px;
   font-weight: 800;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
 }
 
 .location-card span {
   display: block;
   color: #64ff7d;
   font-size: 8px;
+  line-height: 1.2;
+  margin: 0;
 }
 
 .location-card input {
@@ -661,14 +676,20 @@ onBeforeUnmount(() => {
   vertical-align: -1px;
 }
 
-.active-location::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  background: #31ff62;
+.dot {
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
-  margin-right: 10px;
   flex: 0 0 auto;
+  margin-right: 10px;
+}
+
+.dot--active {
+  background: #31ff62;
+}
+
+.dot--inactive {
+  background: #888;
 }
 
 .route-dots {
