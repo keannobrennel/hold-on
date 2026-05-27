@@ -11,7 +11,7 @@ import UserLayout from "../layouts/UserLayout.vue";
 const routes = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/login",
   },
 
   {
