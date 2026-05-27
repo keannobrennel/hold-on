@@ -563,11 +563,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.location-card {
-  flex: 1;
-  min-width: 0;
-}
-
 .location-card > div {
   flex: 1;
   min-width: 0;
@@ -627,12 +622,29 @@ onBeforeUnmount(() => {
   line-height: 1.2;
 }
 
-.location-card span {
+.location-card > div > span {
   display: block;
   color: #64ff7d;
   font-size: 8px;
   line-height: 1.2;
   margin: 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.dot--active {
+  background: #31ff62;
+}
+
+.dot--inactive {
+  background: #888;
 }
 
 .location-card input {
@@ -674,22 +686,6 @@ onBeforeUnmount(() => {
   height: 12px;
   margin-right: 4px;
   vertical-align: -1px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  margin-right: 10px;
-}
-
-.dot--active {
-  background: #31ff62;
-}
-
-.dot--inactive {
-  background: #888;
 }
 
 .route-dots {
