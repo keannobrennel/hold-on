@@ -6,7 +6,7 @@
 #define WIFI_PASSWORD "107149090195"
 
 // MQTT
-#define MQTT_HOST "1b2963ffcb6749ec911eab095a9bf97a.s1.eu.hivemq.cloud"
+#define MQTT_HOST "87c9fdddd5c143b182358ae6f39ba5ab.s1.eu.hivemq.cloud"
 #define MQTT_PORT 8883
 #define MQTT_USERNAME "holdon"
 #define MQTT_PASSWORD "ask-keanno"
