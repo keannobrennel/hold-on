@@ -4,12 +4,9 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import LoginView from "../views/LoginView.vue";
 import HomeView from "../views/HomeView/HomeView.vue";
-import TripView from "../views/TripView.vue";
 import SharedView from "../views/SharedView/SharedView.vue";
-
 import NotificationsView from "../views/Notifications.vue";
 import TripHistoryView from "../views/TripHistory.vue";
-
 import UserLayout from "../layouts/UserLayout.vue";
 
 const routes = [
@@ -25,35 +22,36 @@ const routes = [
   {
     path: "/app",
     component: UserLayout,
-    meta: { requiresAuth: true },
     children: [
       {
-        path: "/home",
+        path: "home",
         name: "Home",
         component: HomeView,
+        meta: { requiresAuth: true },
       },
       {
-        path: "/trip/:tripId",
-        name: "Trip",
-        component: TripView,
-      },
-      {
-        path: "/shared",
-        name: "Shared",
-        component: SharedView,
-      },
-
-      {
-        path: "/notifications",
+        path: "notifications",
         name: "Notifications",
         component: NotificationsView,
+        meta: { requiresAuth: true },
       },
       {
-        path: "/trip-history",
+        path: "trip-history",
         name: "TripHistory",
         component: TripHistoryView,
+        meta: { requiresAuth: true },
+      },
+      {
+        // Public — no requiresAuth, anyone with the link can view
+        path: "/trip/:tripId",
+        name: "SharedTrip",
+        component: SharedView,
       },
     ],
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/login",
   },
 ];
 
@@ -62,7 +60,6 @@ const router = createRouter({
   routes,
 });
 
-// Wait for Firebase auth state
 const getCurrentUser = () =>
   new Promise((resolve) => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -72,13 +69,17 @@ const getCurrentUser = () =>
   });
 
 router.beforeEach(async (to) => {
-  if (to.meta.requiresAuth) {
-    const user = await getCurrentUser();
+  if (!to.meta.requiresAuth) return true;
 
-    if (!user) {
-      return "/login";
-    }
+  const user = await getCurrentUser();
+
+  console.log("Guard fired for:", to.path, "User:", user);
+
+  if (!user) {
+    return { path: "/login" };
   }
+
+  return true;
 });
 
 export default router;

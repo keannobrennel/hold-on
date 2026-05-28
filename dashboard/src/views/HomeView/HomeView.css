@@ -14,13 +14,18 @@
   box-sizing: border-box;
   background: #f4f4f2;
   padding: 0 32px;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   color: #111;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
-
 
 .layout-header-slot {
   height: auto;
@@ -37,10 +42,10 @@
   min-height: 0;
   display: grid;
   grid-template-columns: 286px minmax(520px, 1fr) 360px;
-  gap: 32px;  
-  padding-top: 10px; 
-  padding-bottom: 20px; 
-  
+  gap: 32px;
+  padding-top: 10px;
+  padding-bottom: 20px;
+
   align-items: stretch;
 }
 .left-panel {
@@ -190,7 +195,7 @@
 }
 
 .event-scroll::-webkit-scrollbar-track {
-  background: #E3E9E7;
+  background: #e3e9e7;
 }
 
 .event-scroll::-webkit-scrollbar-thumb {
@@ -674,4 +679,35 @@
     height: auto;
     min-height: 64px;
   }
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #2e2e2e;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #e0e0e0;
+  cursor: pointer;
+  border-bottom: 1px solid #3a3a3a;
+  line-height: 1.4;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: #3a3a3a;
+  color: #31ff62;
 }

@@ -34,8 +34,8 @@ mqttClient.on("message", (topic, message) => {
   console.log(`[MQTT] Topic: ${topic}`, payload);
 
   if (topic === "holdon/location") {
-    // Write live GPS to Firebase RTDB
-    db.ref("liveLocation").set({
+    const tripId = payload.tripId || "default";
+    db.ref(`liveLocation/${tripId}`).set({
       lat: payload.lat,
       lng: payload.lng,
       timestamp: payload.timestamp,
