@@ -20,12 +20,6 @@ const routes = [
     component: LoginView,
   },
   {
-    // Public — no login needed, anyone with the link can view
-    path: "/trip/:tripId",
-    name: "SharedTrip",
-    component: SharedView,
-  },
-  {
     path: "/app",
     component: UserLayout,
     children: [
@@ -46,6 +40,12 @@ const routes = [
         name: "TripHistory",
         component: TripHistoryView,
         meta: { requiresAuth: true },
+      },
+      {
+        // Public — no requiresAuth, anyone with the link can view
+        path: "/trip/:tripId",
+        name: "SharedTrip",
+        component: SharedView,
       },
     ],
   },
