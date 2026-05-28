@@ -711,3 +711,40 @@
   background: #3a3a3a;
   color: #31ff62;
 }
+
+.phone-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.phone-input-box label {
+  font-size: 10px;
+  color: #9dffb0;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.phone-input-box input {
+  background: #454545;
+  border: 0;
+  outline: none;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.phone-input-box input::placeholder {
+  color: #cfcfcf;
+  font-weight: 400;
+}
+
+.phone-input-box input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
