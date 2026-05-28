@@ -7,7 +7,6 @@ import HomeView from "../views/HomeView/HomeView.vue";
 import TripView from "../views/TripView.vue";
 import SharedView from "../views/SharedView/SharedView.vue";
 
-// Teammate's new imports
 import NotificationsView from "../views/Notifications.vue";
 import TripHistoryView from "../views/TripHistory.vue";
 
@@ -24,7 +23,7 @@ const routes = [
     component: LoginView,
   },
   {
-    path: "/app", // Changed slightly from "/" to avoid clashing with your redirect
+    path: "/app",
     component: UserLayout,
     meta: { requiresAuth: true },
     children: [
@@ -43,7 +42,7 @@ const routes = [
         name: "Shared",
         component: SharedView,
       },
-      // Teammate's routes now safely nested inside your layout
+
       {
         path: "/notifications",
         name: "Notifications",
