@@ -1,19 +1,14 @@
 <script setup>
-import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebase";
 import logoImg from "../assets/logo.png";
+import { ref } from "vue";
 
 const router = useRouter();
 
-const darkMode = ref(false);
 const isGoogleLoading = ref(false);
 const errorMessage = ref("");
-
-const toggleTheme = () => {
-  darkMode.value = !darkMode.value;
-};
 
 const handleGoogleSignIn = async () => {
   if (isGoogleLoading.value) return;
@@ -35,21 +30,7 @@ const handleGoogleSignIn = async () => {
 </script>
 
 <template>
-  <div class="page-wrapper" :class="{ dark: darkMode }">
-
-    <!-- THEME TOGGLE -->
-    <button @click="toggleTheme" class="theme-toggle" :class="{ dark: darkMode }">
-      <svg v-if="!darkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#39FF5A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-      <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="#39FF5A" stroke="#39FF5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    </button>
+  <div class="page-wrapper">
 
     <!-- LEFT SECTION (desktop only) -->
     <div class="left-section">
@@ -64,11 +45,11 @@ const handleGoogleSignIn = async () => {
         <img :src="logoImg" alt="HoldON" class="logo-top" />
 
         <!-- WELCOME TEXT -->
-        <p class="welcome-text" :class="{ dark: darkMode }">Hello! Welcome to</p>
+        <p class="welcome-text">Hello! Welcome to</p>
 
         <!-- BRAND NAME -->
         <h1 class="brand-name">
-          <span :class="{ dark: darkMode }">Hold</span><span class="accent">ON</span>
+          <span>Hold</span><span class="accent">ON</span>
         </h1>
 
         <!-- ERROR -->
@@ -78,7 +59,7 @@ const handleGoogleSignIn = async () => {
         <button
           @click="handleGoogleSignIn"
           class="google-btn"
-          :class="{ dark: darkMode, loading: isGoogleLoading }"
+          :class="{ loading: isGoogleLoading }"
           :disabled="isGoogleLoading"
         >
           <svg v-if="!isGoogleLoading" width="18" height="18" viewBox="0 0 48 48">
@@ -111,30 +92,8 @@ const handleGoogleSignIn = async () => {
   overflow: hidden;
   position: relative;
   font-family: 'Inter', sans-serif;
-  background: #FFFFFF;
-  transition: background 0.3s ease;
+  background: #1E1E1E;
 }
-.page-wrapper.dark { background: #1E1E1E; }
-
-/* THEME TOGGLE */
-.theme-toggle {
-  position: absolute;
-  top: 25px;
-  right: 25px;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid #39FF5A;
-  background: #F0F0F0;
-  cursor: pointer;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.theme-toggle.dark { background: #2A2A2A; }
 
 /* LEFT SECTION — desktop only */
 .left-section {
@@ -187,10 +146,8 @@ const handleGoogleSignIn = async () => {
   margin-bottom: 2px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: #000000;
-  transition: color 0.3s ease;
+  color: #FFFFFF;
 }
-.welcome-text.dark { color: #FFFFFF; }
 
 /* BRAND NAME */
 .brand-name {
@@ -200,8 +157,7 @@ const handleGoogleSignIn = async () => {
   margin-bottom: 28px;
   letter-spacing: -4px;
 }
-.brand-name span { color: #000000; transition: color 0.3s ease; }
-.brand-name span.dark { color: #FFFFFF; }
+.brand-name span { color: #FFFFFF; }
 .brand-name .accent { color: #39FF5A; }
 
 /* ERROR */
@@ -215,7 +171,7 @@ const handleGoogleSignIn = async () => {
 .google-btn {
   width: 85%;
   height: 46px;
-  border: 1.5px solid #CFCFCF;
+  border: 1.5px solid #5C5C5C;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -225,19 +181,14 @@ const handleGoogleSignIn = async () => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  background: #FFFFFF;
-  color: #000000;
+  background: #2A2A2A;
+  color: #FFFFFF;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   transition: all 0.25s ease;
 }
 .google-btn:hover:not(:disabled) {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transform: translateY(-1px);
-}
-.google-btn.dark {
-  background: #2A2A2A;
-  color: #FFFFFF;
-  border-color: #5C5C5C;
 }
 .google-btn.loading { cursor: not-allowed; opacity: 0.7; }
 
@@ -285,7 +236,6 @@ const handleGoogleSignIn = async () => {
     margin-bottom: 32px;
   }
   .google-btn { width: 100%; }
-  .theme-toggle { top: 16px; right: 16px; }
 }
 
 /* ─── MOBILE (≤480px) ─── */
