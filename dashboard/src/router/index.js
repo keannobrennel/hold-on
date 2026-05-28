@@ -7,6 +7,9 @@ import HomeView from "../views/HomeView/HomeView.vue";
 import TripView from "../views/TripView.vue";
 import SharedView from "../views/SharedView/SharedView.vue";
 
+import NotificationsView from "../views/Notifications.vue";
+import TripHistoryView from "../views/TripHistory.vue";
+
 import UserLayout from "../layouts/UserLayout.vue";
 
 const routes = [
@@ -14,44 +17,49 @@ const routes = [
     path: "/",
     redirect: "/login",
   },
-
   {
     path: "/login",
     name: "Login",
     component: LoginView,
   },
-
   {
-    path: "/",
+    path: "/app",
     component: UserLayout,
     meta: { requiresAuth: true },
-
     children: [
       {
-        path: "home",
+        path: "/home",
         name: "Home",
         component: HomeView,
       },
-
       {
-        path: "trip/:tripId",
+        path: "/trip/:tripId",
         name: "Trip",
         component: TripView,
       },
-      
       {
         path: "/shared",
         name: "Shared",
-        component: SharedView
+        component: SharedView,
       },
 
+      {
+        path: "/notifications",
+        name: "Notifications",
+        component: NotificationsView,
+      },
+      {
+        path: "/trip-history",
+        name: "TripHistory",
+        component: TripHistoryView,
+      },
     ],
   },
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes,
+  history: createWebHistory(),
+  routes,
 });
 
 // Wait for Firebase auth state
