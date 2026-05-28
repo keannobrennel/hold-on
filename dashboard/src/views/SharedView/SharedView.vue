@@ -2,7 +2,6 @@
   <main class="shared-trip-shell">
     <div class="layout-header-slot"></div>
     <section class="shared-layout">
-      <!-- LEFT PANEL -->
       <aside class="left-panel">
         <div class="stat-card duration-card">
           <p>TRIP DURATION</p>
@@ -27,7 +26,6 @@
               :class="event.type"
             >
               <div class="event-icon">
-                <!-- arrival: map-pin check -->
                 <svg
                   v-if="event.iconType === 'arrival'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +39,6 @@
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <polyline points="9 10 11 12 15 8" />
                 </svg>
-                <!-- success: checkmark -->
                 <svg
                   v-else-if="event.iconType === 'check'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +51,6 @@
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <!-- danger: alert triangle -->
                 <svg
                   v-else-if="event.iconType === 'alert'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +67,6 @@
                   <line x1="12" y1="9" x2="12" y2="13" />
                   <line x1="12" y1="17" x2="12.01" y2="17" />
                 </svg>
-                <!-- flag: trip ended -->
                 <svg
                   v-else-if="event.iconType === 'flag'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +82,6 @@
                   />
                   <line x1="4" y1="22" x2="4" y2="15" />
                 </svg>
-                <!-- default: clock -->
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +105,6 @@
         </div>
       </aside>
 
-      <!-- CENTER MAP -->
       <section class="map-panel">
         <div v-if="showPanicAlert" class="map-alert">
           <svg
@@ -137,7 +130,6 @@
         <div id="shared-map" class="map-container"></div>
       </section>
 
-      <!-- RIGHT PANEL -->
       <aside class="right-column">
         <div class="current-trip-card">
           <h2>CURRENT TRIP</h2>
@@ -148,7 +140,6 @@
               <strong>{{ pickupLocation }}</strong>
               <span>Pick-Up</span>
             </div>
-            <!-- Pick-up: crosshair/target icon -->
             <span
               class="svg-icon location-svg-icon pickup-svg-icon"
               aria-hidden="true"
@@ -180,7 +171,6 @@
               <strong>{{ destination }}</strong>
               <span>Drop-off</span>
             </div>
-            <!-- Drop-off: map pin icon -->
             <span
               class="svg-icon location-svg-icon dropoff-svg-icon"
               aria-hidden="true"
@@ -202,7 +192,6 @@
 
           <div class="trip-meta">
             <span>
-              <!-- ETA: clock icon -->
               <span
                 class="svg-icon meta-svg-icon eta-svg-icon"
                 aria-hidden="true"
@@ -223,7 +212,6 @@
               ETA {{ eta }}
             </span>
             <span>
-              <!-- Distance: motorcycle icon -->
               <span
                 class="svg-icon meta-svg-icon distance-svg-icon"
                 aria-hidden="true"
@@ -276,6 +264,36 @@ import { firestore, db } from "../../firebase";
 import { doc, getDoc, collection, onSnapshot } from "firebase/firestore";
 import { ref as dbRef, onValue, off } from "firebase/database";
 
+// --- CUSTOM ICONS ---
+const pickupIcon = L.divIcon({
+  className: "custom-icon",
+  html: `<svg viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));"><path fill="#2A81CB" stroke="#fff" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+const dropoffIcon = L.divIcon({
+  className: "custom-icon",
+  html: `<svg viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));"><path fill="#CB2B3E" stroke="#fff" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+const passengerIcon = L.divIcon({
+  className: "custom-icon",
+  html: `
+    <div class="passenger-marker-wrapper">
+      <div class="pulse-ring"></div>
+      <svg viewBox="0 0 24 24" width="28" height="28" style="position:relative; z-index:2; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">
+        <path fill="#FFD700" stroke="#111" stroke-width="1.5" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
+});
+
+// --- STATE ---
 const route = useRoute();
 const tripId = route.params.tripId;
 
@@ -299,6 +317,7 @@ let eventsUnsub = null;
 const panicEvents = ref([]);
 const events = ref([]);
 
+// --- COMPUTED ---
 const visibleEvents = computed(() => events.value);
 
 const passengerStatusClass = computed(() => {
@@ -320,6 +339,7 @@ const formattedDuration = computed(() => {
   return `${hours}:${minutes}:${seconds}`;
 });
 
+// --- HELPERS ---
 const callPassenger = () => {
   if (phone.value) {
     window.location.href = `tel:${phone.value}`;
@@ -355,7 +375,7 @@ const getEventMeta = (type) => {
       return {
         title: "Passenger arrived",
         iconType: "arrival",
-        cardType: "arrival",
+        cardType: "arrival", // Matches CSS style for green text
       };
     case "trip_started":
       return { title: "Trip started", iconType: "clock", cardType: "neutral" };
@@ -364,6 +384,7 @@ const getEventMeta = (type) => {
   }
 };
 
+// --- CORE FUNCTIONS ---
 const initMap = async () => {
   await nextTick();
   map = L.map("shared-map", { zoomControl: false }).setView(
@@ -387,12 +408,16 @@ const loadTrip = async () => {
     phone.value = data.phone || null;
 
     if (data.pickupCoords) {
-      L.marker([data.pickupCoords.lat, data.pickupCoords.lng])
+      L.marker([data.pickupCoords.lat, data.pickupCoords.lng], {
+        icon: pickupIcon,
+      })
         .addTo(map)
         .bindPopup("Pick-up: " + data.origin);
     }
     if (data.destinationCoords) {
-      L.marker([data.destinationCoords.lat, data.destinationCoords.lng])
+      L.marker([data.destinationCoords.lat, data.destinationCoords.lng], {
+        icon: dropoffIcon,
+      })
         .addTo(map)
         .bindPopup("Drop-off: " + data.destination);
     }
@@ -428,7 +453,9 @@ const listenToLocation = () => {
     if (marker) {
       marker.setLatLng(latlng);
     } else {
-      marker = L.marker(latlng).addTo(map).bindPopup("Passenger");
+      marker = L.marker(latlng, { icon: passengerIcon })
+        .addTo(map)
+        .bindPopup("Passenger");
     }
     map.setView(latlng, map.getZoom());
   });
@@ -459,7 +486,16 @@ const listenToEvents = () => {
       }
       if (e.type === "not_moving") passengerStatus.value = "Not Moving";
       if (e.type === "resumed") passengerStatus.value = "Moving";
-      if (e.type === "arrived") passengerStatus.value = "Arrived";
+
+      // NEW: Stop the timer and live tracking when the trip officially ends
+      if (e.type === "arrived") {
+        passengerStatus.value = "Arrived";
+        clearInterval(timer);
+        if (locationRef) {
+          off(locationRef);
+          locationRef = null;
+        }
+      }
     });
 
     events.value = loaded.sort((a, b) => b._ts - a._ts);
@@ -482,3 +518,44 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped src="./SharedView.css"></style>
+
+<style>
+.passenger-marker-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+}
+
+.pulse-ring {
+  position: absolute;
+  /* Make the base ring the same size as the icon wrapper */
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 215, 0, 0.35); /* Semi-transparent gold */
+  border: 3px solid #ffb300; /* Solid darker-gold border for high visibility */
+  border-radius: 50%;
+  z-index: 1;
+  box-sizing: border-box;
+  animation: gps-pulse 1.4s ease-out infinite; /* Slightly faster, smooth fade */
+}
+
+@keyframes gps-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(4.5); /* Expands much further out */
+    opacity: 0;
+  }
+  100% {
+    transform: scale(4.5);
+    opacity: 0;
+  }
+}
+</style>
