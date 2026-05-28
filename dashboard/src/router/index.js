@@ -3,8 +3,12 @@ import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 import LoginView from "../views/LoginView.vue";
-import HomeView from "../views/HomeView.vue";
+import HomeView from "../views/HomeView/HomeView.vue";
 import TripView from "../views/TripView.vue";
+import SharedView from "../views/SharedView/SharedView.vue";
+
+import NotificationsView from "../views/Notifications.vue";
+import TripHistoryView from "../views/TripHistory.vue";
 
 import UserLayout from "../layouts/UserLayout.vue";
 
@@ -13,29 +17,41 @@ const routes = [
     path: "/",
     redirect: "/login",
   },
-
   {
     path: "/login",
     name: "Login",
     component: LoginView,
   },
-
   {
-    path: "/",
+    path: "/app",
     component: UserLayout,
     meta: { requiresAuth: true },
-
     children: [
       {
-        path: "home",
+        path: "/home",
         name: "Home",
         component: HomeView,
       },
-
       {
-        path: "trip/:tripId",
+        path: "/trip/:tripId",
         name: "Trip",
         component: TripView,
+      },
+      {
+        path: "/shared",
+        name: "Shared",
+        component: SharedView,
+      },
+
+      {
+        path: "/notifications",
+        name: "Notifications",
+        component: NotificationsView,
+      },
+      {
+        path: "/trip-history",
+        name: "TripHistory",
+        component: TripHistoryView,
       },
     ],
   },
