@@ -1,25 +1,32 @@
 <script setup>
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 import Header from "../layouts/Header.vue";
 import Footer from "../layouts/Footer.vue";
 
 const route = useRoute();
+const router = useRouter();
 
-// Check if the user is currently on the shared route
-const isSharedView = computed(() => route.path === "/shared");
+const isSharedView = computed(() => route.path.startsWith("/trip/"));
+
+const handleExit = async () => {
+  await signOut(auth);
+  router.push("/login");
+};
 </script>
 
 <template>
   <div>
-    <Header />
+    <Header @exit="handleExit" />
 
-    <main 
+    <main
       :style="{
         paddingTop: '48px',
         paddingBottom: isSharedView ? '0' : '52px',
         minHeight: '100vh',
-        overflowY: 'auto'
+        overflowY: 'auto',
       }"
     >
       <router-view />
