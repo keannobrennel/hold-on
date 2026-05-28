@@ -1,8 +1,6 @@
 <template>
   <div class="notifications-page">
 
-    <div class="layout-header-slot"></div>
-
     <div class="main-content">
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -134,17 +132,38 @@ export default {
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.notifications-page { display: flex; flex-direction: column; height: 100vh; font-family: 'Poppins', sans-serif; background: #f5f5f5; color: #222; overflow: hidden; }
+.notifications-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background: #f5f5f5;
+  color: #222;
+  overflow: hidden;
+}
 
-.layout-header-slot { height: 72px; flex: 0 0 72px; }
-
-.layout-footer-slot { height: 72px; flex: 0 0 72px; }
+.layout-footer-slot { height: 50px; flex: 0 0 50px; }
 
 /* Main */
-.main-content { display: flex; flex: 1; overflow: hidden; padding: 24px; gap: 24px; min-height: 0; }
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: 24px;
+  gap: 24px;
+  min-height: 0;
+}
 
-/* Sidebar — widened from 220px to 270px with slightly more padding */
-.sidebar { width: 270px; background: #fff; border-radius: 14px; padding: 22px 20px; box-shadow: 0 4px 4px rgba(0,0,0,0.1); flex-shrink: 0; height: fit-content; }
+/* Sidebar */
+.sidebar {
+  width: 270px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px 20px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  height: fit-content;
+}
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .sidebar-title { font-size: 15px; font-weight: 700; color: #222; }
 .clear-all-btn { background: none; border: none; color: #4CAF50; font-size: 13px; cursor: pointer; font-weight: 500; font-family: 'Poppins', sans-serif; }
@@ -161,10 +180,18 @@ export default {
 .nav-item.active .nav-badge { background: #4CAF50; color: #fff; }
 
 /* Notifications Panel */
-.notifications-panel { flex: 1; background: #fff; border-radius: 14px; padding: 24px 28px; box-shadow: 0 4px 4px rgba(0,0,0,0.1); overflow-y: auto; }
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.notifications-panel {
+  flex: 1;
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  min-width: 0;
+}
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
 .panel-title { font-size: 22px; font-weight: 800; color: #111; }
-.mark-read-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #4CAF50; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Poppins', sans-serif; }
+.mark-read-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #4CAF50; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Poppins', sans-serif; white-space: nowrap; }
 
 /* Groups */
 .notif-group { margin-bottom: 24px; }
@@ -182,13 +209,93 @@ export default {
 .notif-icon-wrap.trip { background: #54FF78; }
 
 /* Body */
-.notif-body { flex: 1; }
-.notif-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 2px; }
-.notif-desc { font-size: 13px; color: #777; margin-bottom: 2px; }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-desc { font-size: 13px; color: #777; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .notif-time { font-size: 12px; color: #aaa; }
 
 /* Unread dot */
 .unread-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .unread-dot.panic { background: #E24B4A; }
 .unread-dot.trip { background: #4CAF50; }
+
+/* ── Tablet (≤ 768px) ── */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .notifications-page { overflow-y: auto; }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    padding: 16px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nav-item {
+    flex: 1 1 auto;
+    min-width: 120px;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .nav-label { flex: unset; }
+
+  .notifications-panel {
+    padding: 16px;
+    overflow-y: visible;
+  }
+
+  .panel-title { font-size: 18px; }
+
+  .notif-title { font-size: 14px; }
+  .notif-desc { font-size: 12px; }
+}
+
+/* ── Mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .main-content { padding: 12px; gap: 12px; }
+
+  .sidebar { padding: 12px; border-radius: 10px; }
+
+  .sidebar-nav { gap: 6px; }
+
+  .nav-item {
+    min-width: 100px;
+    padding: 7px 8px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .nav-badge { font-size: 11px; padding: 1px 7px; }
+
+  .notifications-panel { padding: 12px; border-radius: 10px; }
+
+  .panel-title { font-size: 16px; }
+
+  .mark-read-btn { font-size: 12px; }
+
+  .notif-card { padding: 10px 12px; gap: 10px; }
+
+  .notif-icon-wrap { width: 36px; height: 36px; }
+  .notif-icon-wrap svg { width: 18px; height: 18px; }
+
+  .notif-title { font-size: 13px; }
+  .notif-desc { font-size: 11px; }
+  .notif-time { font-size: 11px; }
+
+  .layout-footer-slot { height: 70px; flex: 0 0 70px; }
+}
 </style>
