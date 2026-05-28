@@ -66,6 +66,7 @@ const navigate = (path) => router.push(path)
       :style="{
         flex: 1,
         border: 'none',
+        borderRadius: '0',
         background: isActive(tab.path) ? '#1E1E1E' : '#f3f3f3',
         color: isActive(tab.path) ? '#3BFF65' : '#1a1a1a',
         display: 'flex',
