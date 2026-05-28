@@ -9,7 +9,7 @@
 }
 
 .live-trip-shell {
-  height: 85vh;
+  height:100vh;
   width: 100vw;
   box-sizing: border-box;
   background: #f4f4f2;
@@ -44,7 +44,7 @@
   grid-template-columns: 286px minmax(520px, 1fr) 360px;
   gap: 32px;
   padding-top: 10px;
-  padding-bottom: 20px;
+  padding-bottom: 100px;
 
   align-items: stretch;
 }
