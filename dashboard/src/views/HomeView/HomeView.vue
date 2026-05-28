@@ -320,6 +320,10 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
+  onSnapshot,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 
 const pickupLocation = ref("");
@@ -347,9 +351,9 @@ let timer = null;
 let map = null;
 let pickupMarker = null;
 let destinationMarker = null;
+let eventsUnsub = null;
 
 const panicEvents = ref([]);
-
 const events = ref([
   {
     id: 1,
@@ -373,6 +377,78 @@ const formattedDuration = computed(() => {
   const seconds = String(elapsedSeconds.value % 60).padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 });
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return "";
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+const getEventMeta = (type) => {
+  switch (type) {
+    case "panic":
+    case "manual_panic":
+      return { title: "Panic detected", iconType: "alert", cardType: "danger" };
+    case "not_moving":
+      return { title: "Not moving", iconType: "alert", cardType: "danger" };
+    case "resumed":
+      return {
+        title: "Movement resumed",
+        iconType: "check",
+        cardType: "success",
+      };
+    case "arrived":
+      return {
+        title: "Passenger arrived",
+        iconType: "arrival",
+        cardType: "success",
+      };
+    case "trip_started":
+      return { title: "Trip started", iconType: "clock", cardType: "neutral" };
+    default:
+      return { title: type, iconType: "clock", cardType: "neutral" };
+  }
+};
+
+const listenToEvents = (id) => {
+  const eventsRef = collection(firestore, "trips", id, "events");
+  eventsUnsub = onSnapshot(eventsRef, (snapshot) => {
+    const loaded = [];
+    snapshot.forEach((d) => {
+      const e = d.data();
+      const meta = getEventMeta(e.type);
+      loaded.push({
+        id: d.id,
+        title: meta.title,
+        time: formatTime(e.timestamp),
+        type: meta.cardType,
+        iconType: meta.iconType,
+        _ts: e.timestamp?.seconds || 0,
+      });
+
+      if (e.type === "panic" || e.type === "manual_panic") {
+        panicEvents.value.push(e);
+        latestAlert.value = `Panic detected at ${formatTime(e.timestamp)}`;
+      }
+    });
+
+    // Keep trip started entry at bottom, real events above
+    const tripReadyEntry = {
+      id: "trip-ready",
+      title: tripStarted.value ? "Trip started" : "Trip ready",
+      time: tripStarted.value ? "" : "Waiting",
+      type: "neutral",
+      iconType: "clock",
+    };
+
+    const sorted = loaded.sort((a, b) => b._ts - a._ts);
+    events.value = [...sorted, tripReadyEntry];
+  });
+};
 
 const searchPlace = (query, type) => {
   if (type === "pickup") {
@@ -421,7 +497,6 @@ const selectPlace = (place, type) => {
     pickupLocation.value = name;
     pickupCoords.value = { lat, lng };
     pickupSuggestions.value = [];
-
     if (pickupMarker) map.removeLayer(pickupMarker);
     pickupMarker = L.marker([lat, lng])
       .addTo(map)
@@ -430,14 +505,12 @@ const selectPlace = (place, type) => {
     destination.value = name;
     destinationCoords.value = { lat, lng };
     destinationSuggestions.value = [];
-
     if (destinationMarker) map.removeLayer(destinationMarker);
     destinationMarker = L.marker([lat, lng])
       .addTo(map)
       .bindPopup("Drop-off: " + name);
   }
 
-  // Fit map to show both markers if both are set
   if (pickupCoords.value && destinationCoords.value) {
     const bounds = L.latLngBounds(
       [pickupCoords.value.lat, pickupCoords.value.lng],
@@ -475,26 +548,11 @@ const startTrip = async () => {
     elapsedSeconds.value = 0;
     shareableLink.value = `${window.location.origin}/trip/${tripRef.id}`;
 
-    const now = new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    events.value = [
-      {
-        id: Date.now(),
-        title: "Trip started",
-        time: now,
-        type: "neutral",
-        iconType: "clock",
-      },
-      ...events.value,
-    ];
-
     timer = setInterval(() => {
       elapsedSeconds.value += 1;
     }, 1000);
+
+    listenToEvents(tripRef.id);
   } catch (err) {
     console.error("Failed to start trip:", err);
     tripError.value = "Failed to start trip. Please try again.";
@@ -514,6 +572,11 @@ const endTrip = async () => {
   latestAlert.value = "";
   clearInterval(timer);
   timer = null;
+
+  if (eventsUnsub) {
+    eventsUnsub();
+    eventsUnsub = null;
+  }
 
   const now = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -546,6 +609,72 @@ const endTrip = async () => {
   tripId.value = null;
 };
 
+const restoreActiveTrip = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const q = query(
+      collection(firestore, "trips"),
+      where("userId", "==", user.uid),
+      where("status", "==", "active"),
+    );
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return;
+
+    // Take the most recent active trip
+    const tripDoc = snapshot.docs[0];
+    const data = tripDoc.data();
+
+    tripId.value = tripDoc.id;
+    tripStarted.value = true;
+    pickupLocation.value = data.origin || "";
+    destination.value = data.destination || "";
+    shareableLink.value = `${window.location.origin}/trip/${tripDoc.id}`;
+
+    // Restore elapsed time from startedAt
+    if (data.startedAt) {
+      const startMs = data.startedAt.toDate().getTime();
+      elapsedSeconds.value = Math.floor((Date.now() - startMs) / 1000);
+    }
+
+    // Restore map markers if coords exist
+    if (data.pickupCoords) {
+      pickupCoords.value = data.pickupCoords;
+      pickupMarker = L.marker([data.pickupCoords.lat, data.pickupCoords.lng])
+        .addTo(map)
+        .bindPopup("Pick-up: " + data.origin);
+    }
+    if (data.destinationCoords) {
+      destinationCoords.value = data.destinationCoords;
+      destinationMarker = L.marker([
+        data.destinationCoords.lat,
+        data.destinationCoords.lng,
+      ])
+        .addTo(map)
+        .bindPopup("Drop-off: " + data.destination);
+    }
+    if (data.pickupCoords && data.destinationCoords) {
+      map.fitBounds(
+        L.latLngBounds(
+          [data.pickupCoords.lat, data.pickupCoords.lng],
+          [data.destinationCoords.lat, data.destinationCoords.lng],
+        ),
+        { padding: [40, 40] },
+      );
+    }
+
+    timer = setInterval(() => {
+      elapsedSeconds.value += 1;
+    }, 1000);
+
+    listenToEvents(tripDoc.id);
+  } catch (err) {
+    console.error("Failed to restore active trip:", err);
+  }
+};
+
 const initMap = async () => {
   await nextTick();
   map = L.map("home-map", { zoomControl: false }).setView(
@@ -558,13 +687,15 @@ const initMap = async () => {
   }).addTo(map);
 };
 
-onMounted(() => {
-  initMap();
+onMounted(async () => {
+  await initMap();
+  await restoreActiveTrip();
 });
 
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer);
   if (map) map.remove();
+  if (eventsUnsub) eventsUnsub();
 });
 </script>
 
