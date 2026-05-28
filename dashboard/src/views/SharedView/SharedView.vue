@@ -386,7 +386,6 @@ const loadTrip = async () => {
     destination.value = data.destination || "Unknown";
     phone.value = data.phone || null;
 
-    // Pin pickup and destination on map if coords exist
     if (data.pickupCoords) {
       L.marker([data.pickupCoords.lat, data.pickupCoords.lng])
         .addTo(map)
@@ -407,7 +406,6 @@ const loadTrip = async () => {
       );
     }
 
-    // Start timer from startedAt
     if (data.startedAt) {
       const startMs = data.startedAt.toDate().getTime();
       elapsedSeconds.value = Math.floor((Date.now() - startMs) / 1000);
@@ -464,7 +462,6 @@ const listenToEvents = () => {
       if (e.type === "arrived") passengerStatus.value = "Arrived";
     });
 
-    // Sort newest first
     events.value = loaded.sort((a, b) => b._ts - a._ts);
   });
 };
