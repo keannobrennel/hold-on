@@ -141,15 +141,26 @@
 
         <div class="location-card">
           <span class="dot dot--active" aria-hidden="true"></span>
-          <div>
+          <div style="position: relative; flex: 1; min-width: 0">
             <input
               v-model="pickupLocation"
               :disabled="tripStarted"
               placeholder="Search pick-up . . ."
+              @input="searchPlace(pickupLocation, 'pickup')"
+              autocomplete="off"
             />
             <span>Pick-Up</span>
+            <div v-if="pickupSuggestions.length" class="suggestions-dropdown">
+              <div
+                v-for="place in pickupSuggestions"
+                :key="place.place_id"
+                class="suggestion-item"
+                @mousedown.prevent="selectPlace(place, 'pickup')"
+              >
+                {{ place.display_name.split(",").slice(0, 3).join(",") }}
+              </div>
+            </div>
           </div>
-          <!-- Pick-up: crosshair/target icon -->
           <span
             class="svg-icon location-svg-icon pickup-svg-icon"
             aria-hidden="true"
@@ -177,15 +188,29 @@
 
         <div class="location-card">
           <span class="dot dot--inactive" aria-hidden="true"></span>
-          <div>
+          <div style="position: relative; flex: 1; min-width: 0">
             <input
               v-model="destination"
               :disabled="tripStarted"
               placeholder="Search destination . . ."
+              @input="searchPlace(destination, 'destination')"
+              autocomplete="off"
             />
             <span>Drop-off</span>
+            <div
+              v-if="destinationSuggestions.length"
+              class="suggestions-dropdown"
+            >
+              <div
+                v-for="place in destinationSuggestions"
+                :key="place.place_id"
+                class="suggestion-item"
+                @mousedown.prevent="selectPlace(place, 'destination')"
+              >
+                {{ place.display_name.split(",").slice(0, 3).join(",") }}
+              </div>
+            </div>
           </div>
-          <!-- Drop-off: map pin icon -->
           <span
             class="svg-icon location-svg-icon dropoff-svg-icon"
             aria-hidden="true"
@@ -310,8 +335,18 @@ const latestAlert = ref("");
 const tripId = ref(null);
 const tripError = ref("");
 
+// Location search
+const pickupCoords = ref(null);
+const destinationCoords = ref(null);
+const pickupSuggestions = ref([]);
+const destinationSuggestions = ref([]);
+let pickupDebounce = null;
+let destinationDebounce = null;
+
 let timer = null;
 let map = null;
+let pickupMarker = null;
+let destinationMarker = null;
 
 const panicEvents = ref([]);
 
@@ -339,6 +374,81 @@ const formattedDuration = computed(() => {
   return `${hours}:${minutes}:${seconds}`;
 });
 
+const searchPlace = (query, type) => {
+  if (type === "pickup") {
+    clearTimeout(pickupDebounce);
+    if (!query || query.length < 3) {
+      pickupSuggestions.value = [];
+      return;
+    }
+    pickupDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=ph`,
+          { headers: { "Accept-Language": "en" } },
+        );
+        pickupSuggestions.value = await res.json();
+      } catch {
+        pickupSuggestions.value = [];
+      }
+    }, 400);
+  } else {
+    clearTimeout(destinationDebounce);
+    if (!query || query.length < 3) {
+      destinationSuggestions.value = [];
+      return;
+    }
+    destinationDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=ph`,
+          { headers: { "Accept-Language": "en" } },
+        );
+        destinationSuggestions.value = await res.json();
+      } catch {
+        destinationSuggestions.value = [];
+      }
+    }, 400);
+  }
+};
+
+const selectPlace = (place, type) => {
+  const lat = parseFloat(place.lat);
+  const lng = parseFloat(place.lon);
+  const name = place.display_name.split(",").slice(0, 2).join(",").trim();
+
+  if (type === "pickup") {
+    pickupLocation.value = name;
+    pickupCoords.value = { lat, lng };
+    pickupSuggestions.value = [];
+
+    if (pickupMarker) map.removeLayer(pickupMarker);
+    pickupMarker = L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup("Pick-up: " + name);
+  } else {
+    destination.value = name;
+    destinationCoords.value = { lat, lng };
+    destinationSuggestions.value = [];
+
+    if (destinationMarker) map.removeLayer(destinationMarker);
+    destinationMarker = L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup("Drop-off: " + name);
+  }
+
+  // Fit map to show both markers if both are set
+  if (pickupCoords.value && destinationCoords.value) {
+    const bounds = L.latLngBounds(
+      [pickupCoords.value.lat, pickupCoords.value.lng],
+      [destinationCoords.value.lat, destinationCoords.value.lng],
+    );
+    map.fitBounds(bounds, { padding: [40, 40] });
+  } else {
+    map.setView([lat, lng], 15);
+  }
+};
+
 const startTrip = async () => {
   tripError.value = "";
   const user = auth.currentUser;
@@ -353,6 +463,8 @@ const startTrip = async () => {
       userId: user.uid,
       origin: pickupLocation.value,
       destination: destination.value,
+      pickupCoords: pickupCoords.value || null,
+      destinationCoords: destinationCoords.value || null,
       status: "active",
       createdAt: serverTimestamp(),
       startedAt: serverTimestamp(),
@@ -436,11 +548,10 @@ const endTrip = async () => {
 
 const initMap = async () => {
   await nextTick();
-
-  map = L.map("home-map", {
-    zoomControl: false,
-  }).setView([14.5869, 121.0568], 16);
-
+  map = L.map("home-map", { zoomControl: false }).setView(
+    [14.5869, 121.0568],
+    13,
+  );
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "© OpenStreetMap",
