@@ -246,9 +246,21 @@
             </span>
           </div>
 
-          <button class="call-btn" @click="callPassenger">
-            Call Passenger
-          </button>
+          <div class="call-btn-wrapper">
+            <button class="call-btn" @click="callPassenger">
+              Call Passenger
+            </button>
+            <transition name="fade-pop">
+              <span v-if="copied" class="copied-toast">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Number copied!
+              </span>
+            </transition>
+          </div>
         </div>
       </aside>
     </section>
@@ -296,7 +308,7 @@ const passengerIcon = L.divIcon({
 // --- STATE ---
 const route = useRoute();
 const tripId = route.params.tripId;
-
+const copied = ref(false);
 const pickupLocation = ref("Loading...");
 const destination = ref("Loading...");
 const phone = ref(null);
@@ -342,6 +354,8 @@ const formattedDuration = computed(() => {
 // --- HELPERS ---
 const callPassenger = () => {
   if (phone.value) {
+    copied.value = true;
+    setTimeout(() => { copied.value = false; }, 2500);
     window.location.href = `tel:${phone.value}`;
   } else {
     alert("No phone number available for this trip.");
