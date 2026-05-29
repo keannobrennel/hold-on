@@ -287,10 +287,21 @@
           <span v-else>{{ shareableLink }}</span>
         </div>
 
+        <div class="phone-input-box">
+        <label>Your phone number</label>
+        <input
+          v-model="phone"
+          type="tel"
+          placeholder="e.g. 09171234567"
+          :disabled="tripStarted"
+          maxlength="15"
+          autocomplete="off"/>
+        </div>
+
         <button
           v-if="!tripStarted"
           class="primary-action"
-          :disabled="!pickupLocation || !destination"
+          :disabled="!pickupLocation || !destination || !phone"
           @click="startTrip"
         >
           Start
@@ -338,6 +349,7 @@ const shareableLink = ref("");
 const latestAlert = ref("");
 const tripId = ref(null);
 const tripError = ref("");
+const phone = ref("");
 
 // Location search
 const pickupCoords = ref(null);
@@ -538,6 +550,7 @@ const startTrip = async () => {
       destination: destination.value,
       pickupCoords: pickupCoords.value || null,
       destinationCoords: destinationCoords.value || null,
+      phone: phone.value,
       status: "active",
       createdAt: serverTimestamp(),
       startedAt: serverTimestamp(),
