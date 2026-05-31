@@ -3,7 +3,6 @@
     <div class="layout-header-slot"></div>
 
     <section class="trip-layout">
-      <!-- LEFT PANEL -->
       <aside class="left-panel">
         <div class="stat-card duration-card">
           <p>TRIP DURATION</p>
@@ -40,7 +39,6 @@
               :class="event.type"
             >
               <div class="event-icon">
-                <!-- SUCCESS: checkmark -->
                 <svg
                   v-if="event.type === 'success'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +51,6 @@
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <!-- DANGER: alert triangle -->
                 <svg
                   v-else-if="event.type === 'danger'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +67,6 @@
                   <line x1="12" y1="9" x2="12" y2="13" />
                   <line x1="12" y1="17" x2="12.01" y2="17" />
                 </svg>
-                <!-- NEUTRAL: clock for trip started/ready, flag for trip ended -->
                 <svg
                   v-else-if="event.iconType === 'flag'"
                   xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +105,6 @@
         </div>
       </aside>
 
-      <!-- CENTER MAP -->
       <section class="map-panel">
         <div v-if="tripStarted && latestAlert" class="map-alert">
           <svg
@@ -135,7 +130,6 @@
         <div id="home-map" class="map-container"></div>
       </section>
 
-      <!-- RIGHT PANEL -->
       <aside class="right-panel">
         <h2>CURRENT TRIP</h2>
 
@@ -236,7 +230,6 @@
 
         <div class="trip-meta">
           <span>
-            <!-- ETA: clock icon -->
             <span
               class="svg-icon meta-svg-icon eta-svg-icon"
               aria-hidden="true"
@@ -257,7 +250,6 @@
             ETA {{ tripStarted ? eta : "--:--" }}
           </span>
           <span>
-            <!-- Distance: motorcycle icon -->
             <span
               class="svg-icon meta-svg-icon distance-svg-icon"
               aria-hidden="true"
@@ -282,20 +274,107 @@
           </span>
         </div>
 
+        <div
+          v-if="tripStarted"
+          class="location-card"
+          style="
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            margin-bottom: 22px;
+            background: #2a2a2a;
+            border: 1px dashed #444;
+          "
+        >
+          <h3
+            style="margin: 0; font-size: 11px; color: #888; letter-spacing: 1px"
+          >
+            HARDWARE SIMULATOR
+          </h3>
+
+          <div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 6px;
+              "
+            >
+              <span style="font-size: 12px; color: white; font-weight: 600"
+                >Grip Pressure (FSR)</span
+              >
+              <span
+                :style="{ color: fsrValue > 100 ? '#31ff62' : '#ff4444' }"
+                style="font-size: 12px; font-weight: bold"
+              >
+                {{ fsrValue }}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1024"
+              v-model="fsrValue"
+              @change="simulateFSR"
+              style="width: 100%; cursor: pointer"
+            />
+            <span style="font-size: 9px; color: #888"
+              >Drops below 100 trigger "Not Moving"</span
+            >
+          </div>
+
+          <button
+            @click="simulatePanic"
+            style="
+              background: #ff4a4a;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              padding: 10px;
+              font-weight: bold;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+            "
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Trigger Hardware Panic
+          </button>
+        </div>
+
         <div class="share-box">
           <span v-if="!tripStarted">Link will appear after starting trip</span>
           <span v-else>{{ shareableLink }}</span>
         </div>
 
         <div class="phone-input-box">
-        <label>Your phone number</label>
-        <input
-          v-model="phone"
-          type="tel"
-          placeholder="e.g. 09171234567"
-          :disabled="tripStarted"
-          maxlength="15"
-          autocomplete="off"/>
+          <label>Your phone number</label>
+          <input
+            v-model="phone"
+            type="tel"
+            placeholder="e.g. 09171234567"
+            :disabled="tripStarted"
+            maxlength="15"
+            autocomplete="off"
+          />
         </div>
 
         <button
@@ -324,7 +403,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { auth, firestore } from "../../firebase";
+import { auth, firestore, db } from "../../firebase"; // Added db back!
+import { ref as dbRef, onValue, off } from "firebase/database"; // Added RTDB imports back!
 import {
   collection,
   addDoc,
@@ -337,6 +417,36 @@ import {
   getDocs,
 } from "firebase/firestore";
 
+// --- CUSTOM ICONS ---
+const pickupIcon = L.divIcon({
+  className: "custom-icon",
+  html: `<svg viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));"><path fill="#2A81CB" stroke="#fff" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+const dropoffIcon = L.divIcon({
+  className: "custom-icon",
+  html: `<svg viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));"><path fill="#CB2B3E" stroke="#fff" stroke-width="1.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+const passengerIcon = L.divIcon({
+  className: "custom-icon",
+  html: `
+    <div class="passenger-marker-wrapper">
+      <div class="pulse-ring"></div>
+      <svg viewBox="0 0 24 24" width="28" height="28" style="position:relative; z-index:2; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">
+        <path fill="#FFD700" stroke="#111" stroke-width="1.5" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
+});
+
+// --- STATE ---
 const pickupLocation = ref("");
 const destination = ref("");
 const tripStarted = ref(false);
@@ -351,7 +461,10 @@ const tripId = ref(null);
 const tripError = ref("");
 const phone = ref("");
 
-// Location search
+// --- HARDWARE SIMULATOR STATE ---
+const fsrValue = ref(500); // Defaults to a strong grip (500/1024)
+let isHoldingOn = true;
+
 const pickupCoords = ref(null);
 const destinationCoords = ref(null);
 const pickupSuggestions = ref([]);
@@ -364,18 +477,13 @@ let map = null;
 let pickupMarker = null;
 let destinationMarker = null;
 let eventsUnsub = null;
+let locationRef = null;
+let passengerMarker = null;
 
 const panicEvents = ref([]);
-const events = ref([
-  {
-    id: 1,
-    title: "Trip ready",
-    time: "Waiting",
-    type: "neutral",
-    iconType: "clock",
-  },
-]);
+const events = ref([]);
 
+// --- COMPUTED ---
 const visibleEvents = computed(() => events.value.slice(0, 5));
 
 const formattedDuration = computed(() => {
@@ -390,6 +498,7 @@ const formattedDuration = computed(() => {
   return `${hours}:${minutes}:${seconds}`;
 });
 
+// --- HELPERS ---
 const formatTime = (timestamp) => {
   if (!timestamp) return "";
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -426,6 +535,59 @@ const getEventMeta = (type) => {
   }
 };
 
+// --- CORE FUNCTIONS ---
+
+const simulateFSR = async () => {
+  if (!tripId.value) return;
+
+  // The C++ firmware checks if gripValue > 100
+  const currentlyHolding = fsrValue.value > 100;
+
+  // Only push an event if the state actually changed
+  if (currentlyHolding !== isHoldingOn) {
+    isHoldingOn = currentlyHolding;
+
+    try {
+      await addDoc(collection(firestore, "trips", tripId.value, "events"), {
+        type: isHoldingOn ? "resumed" : "not_moving",
+        timestamp: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Failed to simulate FSR event:", err);
+    }
+  }
+};
+
+const simulatePanic = async () => {
+  if (!tripId.value) return;
+
+  try {
+    await addDoc(collection(firestore, "trips", tripId.value, "events"), {
+      type: "panic",
+      timestamp: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error("Failed to simulate Panic event:", err);
+  }
+};
+
+const listenToLocation = (id) => {
+  locationRef = dbRef(db, `liveLocation/${id}`);
+  onValue(locationRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    const latlng = [data.lat, data.lng];
+    if (passengerMarker) {
+      passengerMarker.setLatLng(latlng);
+    } else {
+      passengerMarker = L.marker(latlng, { icon: passengerIcon })
+        .addTo(map)
+        .bindPopup("Passenger");
+    }
+    map.setView(latlng); // This makes the map follow the marker!
+  });
+};
+
 const listenToEvents = (id) => {
   const eventsRef = collection(firestore, "trips", id, "events");
   eventsUnsub = onSnapshot(eventsRef, (snapshot) => {
@@ -448,17 +610,7 @@ const listenToEvents = (id) => {
       }
     });
 
-    // Keep trip started entry at bottom, real events above
-    const tripReadyEntry = {
-      id: "trip-ready",
-      title: tripStarted.value ? "Trip started" : "Trip ready",
-      time: tripStarted.value ? "" : "Waiting",
-      type: "neutral",
-      iconType: "clock",
-    };
-
-    const sorted = loaded.sort((a, b) => b._ts - a._ts);
-    events.value = [...sorted, tripReadyEntry];
+    events.value = loaded.sort((a, b) => b._ts - a._ts);
   });
 };
 
@@ -510,7 +662,7 @@ const selectPlace = (place, type) => {
     pickupCoords.value = { lat, lng };
     pickupSuggestions.value = [];
     if (pickupMarker) map.removeLayer(pickupMarker);
-    pickupMarker = L.marker([lat, lng])
+    pickupMarker = L.marker([lat, lng], { icon: pickupIcon })
       .addTo(map)
       .bindPopup("Pick-up: " + name);
   } else {
@@ -518,7 +670,7 @@ const selectPlace = (place, type) => {
     destinationCoords.value = { lat, lng };
     destinationSuggestions.value = [];
     if (destinationMarker) map.removeLayer(destinationMarker);
-    destinationMarker = L.marker([lat, lng])
+    destinationMarker = L.marker([lat, lng], { icon: dropoffIcon })
       .addTo(map)
       .bindPopup("Drop-off: " + name);
   }
@@ -556,6 +708,11 @@ const startTrip = async () => {
       startedAt: serverTimestamp(),
     });
 
+    await addDoc(collection(firestore, "trips", tripRef.id, "events"), {
+      type: "trip_started",
+      timestamp: serverTimestamp(),
+    });
+
     tripId.value = tripRef.id;
     tripStarted.value = true;
     elapsedSeconds.value = 0;
@@ -566,6 +723,7 @@ const startTrip = async () => {
     }, 1000);
 
     listenToEvents(tripRef.id);
+    listenToLocation(tripRef.id); // Starts map tracking
   } catch (err) {
     console.error("Failed to start trip:", err);
     tripError.value = "Failed to start trip. Please try again.";
@@ -591,31 +749,29 @@ const endTrip = async () => {
     eventsUnsub = null;
   }
 
-  const now = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  if (locationRef) {
+    off(locationRef);
+    locationRef = null;
+  }
 
-  events.value = [
-    {
-      id: Date.now(),
-      title: "Trip ended",
-      time: now,
-      type: "neutral",
-      iconType: "flag",
-    },
-    ...events.value,
-  ];
+  if (passengerMarker) {
+    map.removeLayer(passengerMarker);
+    passengerMarker = null;
+  }
 
   if (tripId.value) {
     try {
+      await addDoc(collection(firestore, "trips", tripId.value, "events"), {
+        type: "arrived",
+        timestamp: serverTimestamp(),
+      });
+
       await updateDoc(doc(firestore, "trips", tripId.value), {
         status: "ended",
         endedAt: serverTimestamp(),
       });
     } catch (err) {
-      console.error("Failed to update trip status:", err);
+      console.error("Failed to end trip:", err);
     }
   }
 
@@ -636,7 +792,6 @@ const restoreActiveTrip = async () => {
     const snapshot = await getDocs(q);
     if (snapshot.empty) return;
 
-    // Take the most recent active trip
     const tripDoc = snapshot.docs[0];
     const data = tripDoc.data();
 
@@ -646,25 +801,25 @@ const restoreActiveTrip = async () => {
     destination.value = data.destination || "";
     shareableLink.value = `${window.location.origin}/trip/${tripDoc.id}`;
 
-    // Restore elapsed time from startedAt
     if (data.startedAt) {
       const startMs = data.startedAt.toDate().getTime();
       elapsedSeconds.value = Math.floor((Date.now() - startMs) / 1000);
     }
 
-    // Restore map markers if coords exist
     if (data.pickupCoords) {
       pickupCoords.value = data.pickupCoords;
-      pickupMarker = L.marker([data.pickupCoords.lat, data.pickupCoords.lng])
+      pickupMarker = L.marker([data.pickupCoords.lat, data.pickupCoords.lng], {
+        icon: pickupIcon,
+      })
         .addTo(map)
         .bindPopup("Pick-up: " + data.origin);
     }
     if (data.destinationCoords) {
       destinationCoords.value = data.destinationCoords;
-      destinationMarker = L.marker([
-        data.destinationCoords.lat,
-        data.destinationCoords.lng,
-      ])
+      destinationMarker = L.marker(
+        [data.destinationCoords.lat, data.destinationCoords.lng],
+        { icon: dropoffIcon },
+      )
         .addTo(map)
         .bindPopup("Drop-off: " + data.destination);
     }
@@ -683,6 +838,7 @@ const restoreActiveTrip = async () => {
     }, 1000);
 
     listenToEvents(tripDoc.id);
+    listenToLocation(tripDoc.id); // Restores map tracking
   } catch (err) {
     console.error("Failed to restore active trip:", err);
   }
@@ -709,7 +865,49 @@ onBeforeUnmount(() => {
   if (timer) clearInterval(timer);
   if (map) map.remove();
   if (eventsUnsub) eventsUnsub();
+  if (locationRef) off(locationRef);
 });
 </script>
 
 <style scoped src="./HomeView.css"></style>
+
+<style>
+.passenger-marker-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+}
+
+.pulse-ring {
+  position: absolute;
+  /* Make the base ring the same size as the icon wrapper */
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 215, 0, 0.35); /* Semi-transparent gold */
+  border: 3px solid #ffb300; /* Solid darker-gold border for high visibility */
+  border-radius: 50%;
+  z-index: 1;
+  box-sizing: border-box;
+  animation: gps-pulse 1.4s ease-out infinite; /* Slightly faster, smooth fade */
+}
+
+@keyframes gps-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(4.5); /* Expands much further out */
+    opacity: 0;
+  }
+  100% {
+    transform: scale(4.5);
+    opacity: 0;
+  }
+}
+</style>
