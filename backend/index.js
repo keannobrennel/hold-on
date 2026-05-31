@@ -27,14 +27,18 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// MQTT message handler
 mqttClient.on("message", (topic, message) => {
   try {
     const payload = JSON.parse(message.toString());
     console.log(`[MQTT] Topic: ${topic}`, payload);
 
+    const tripId = payload.tripId;
+    if (!tripId || tripId === "default") {
+      console.warn(`[MQTT] Skipping — no valid tripId on ${topic}`);
+      return;
+    }
+
     if (topic === "holdon/location") {
-      const tripId = payload.tripId || "default";
       db.ref(`liveLocation/${tripId}`).set({
         lat: payload.lat,
         lng: payload.lng,
@@ -43,7 +47,6 @@ mqttClient.on("message", (topic, message) => {
     }
 
     if (topic === "holdon/event") {
-      const tripId = payload.tripId || "default";
       firestore
         .collection("trips")
         .doc(tripId)
