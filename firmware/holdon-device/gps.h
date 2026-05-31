@@ -1,42 +1,69 @@
 #ifndef GPS_H
 #define GPS_H
 
-#include <TinyGPS++.h>
+#include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
 #include "config.h"
 #include "mqtt.h"
 
 TinyGPSPlus gps;
-SoftwareSerial gpsSerial(GPS_RX_PIN, GPS_TX_PIN);
+SoftwareSerial gpsSerial(PIN_GPS_RX, PIN_GPS_TX);
 
-unsigned long lastGPSPublish = 0;
+bool gpsHasFix = false;
+double currentLat = 0.0;
+double currentLng = 0.0;
+uint32_t gpsChars = 0;
+unsigned long lastGpsPublishMs = 0;
 
 void initGPS() {
   gpsSerial.begin(9600);
-  Serial.println("GPS initialized");
+  Serial.println("GPS serial started at 9600.");
 }
 
-void readGPS() {
-  while (gpsSerial.available() > 0) {
-    gps.encode(gpsSerial.read());
+void pumpGPS() {
+  while (gpsSerial.available()) {
+    char c = gpsSerial.read();
+    gps.encode(c);
+    gpsChars++;
+  }
+
+  if (gps.location.isValid()) {
+    gpsHasFix = true;
+    currentLat = gps.location.lat();
+    currentLng = gps.location.lng();
   }
 }
 
 void publishLocation() {
-  if (millis() - lastGPSPublish < GPS_PUBLISH_INTERVAL) return;
-  lastGPSPublish = millis();
+  if (millis() - lastGpsPublishMs < GPS_PUBLISH_MS) return;
+  lastGpsPublishMs = millis();
 
-  if (gps.location.isValid()) {
-    String payload = "{";
-    payload += "\"lat\":" + String(gps.location.lat(), 6) + ",";
-    payload += "\"lng\":" + String(gps.location.lng(), 6) + ",";
-    payload += "\"timestamp\":" + String(millis());
-    payload += "}";
-
-    publishMessage(TOPIC_LOCATION, payload);
-  } else {
+  if (!gpsHasFix) {
     Serial.println("[GPS] Waiting for fix...");
+    return;
   }
+
+  String payload = "{";
+  payload += "\"tripId\":\"" + activeTripId + "\",";
+  payload += "\"lat\":" + String(currentLat, 6) + ",";
+  payload += "\"lng\":" + String(currentLng, 6) + ",";
+  payload += "\"timestamp\":" + String(millis());
+  payload += "}";
+
+  publishMessage(TOPIC_LOCATION, payload);
+}
+
+String gpsSummary() {
+  if (gpsHasFix) {
+    return String(currentLat, 5) + "," + String(currentLng, 5);
+  }
+  if (gpsChars > 0) return "GPS data, no fix";
+  return "GPS no data";
+}
+
+double distanceTo(double destLat, double destLng) {
+  if (!gpsHasFix) return -1;
+  return TinyGPSPlus::distanceBetween(currentLat, currentLng, destLat, destLng);
 }
 
 #endif

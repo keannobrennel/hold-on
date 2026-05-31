@@ -1,17 +1,37 @@
 <script setup>
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 import Header from "../layouts/Header.vue";
 import Footer from "../layouts/Footer.vue";
+
+const route = useRoute();
+const router = useRouter();
+
+const isSharedView = computed(() => route.path.startsWith("/trip/"));
+
+const handleExit = async () => {
+  await signOut(auth);
+  router.push("/login");
+};
 </script>
 
 <template>
   <div>
-    <Header />
+    <Header @exit="handleExit" />
 
-    <!-- pushes content below the fixed header (48px) and above the fixed footer (52px) -->
-    <main style="padding-top: 48px; padding-bottom: 52px; min-height: 100vh; overflow-y: auto;">
+    <main
+      :style="{
+        paddingTop: '48px',
+        paddingBottom: isSharedView ? '0' : '52px',
+        minHeight: '100vh',
+        overflowY: 'auto',
+      }"
+    >
       <router-view />
     </main>
 
-    <Footer />
+    <Footer v-if="!isSharedView" />
   </div>
 </template>
