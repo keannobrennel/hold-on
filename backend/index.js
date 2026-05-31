@@ -43,8 +43,9 @@ mqttClient.on("message", (topic, message) => {
   }
 
   if (topic === "holdon/event") {
-    // Write events to Firestore
-    firestore.collection("events").add({
+    const tripId = payload.tripId || "default";
+
+    firestore.collection("trips").doc(tripId).collection("events").add({
       type: payload.type,
       lat: payload.lat,
       lng: payload.lng,
