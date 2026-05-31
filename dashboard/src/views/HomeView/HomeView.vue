@@ -288,14 +288,15 @@
         </div>
 
         <div class="phone-input-box">
-        <label>Your phone number</label>
-        <input
-          v-model="phone"
-          type="tel"
-          placeholder="e.g. 09171234567"
-          :disabled="tripStarted"
-          maxlength="15"
-          autocomplete="off"/>
+          <label>Your phone number</label>
+          <input
+            v-model="phone"
+            type="tel"
+            placeholder="e.g. 09171234567"
+            :disabled="tripStarted"
+            maxlength="15"
+            autocomplete="off"
+          />
         </div>
 
         <button
@@ -560,6 +561,29 @@ const startTrip = async () => {
     tripStarted.value = true;
     elapsedSeconds.value = 0;
     shareableLink.value = `${window.location.origin}/trip/${tripRef.id}`;
+
+    // Send tripId and destination coords to device via backend
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/config`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          tripId: tripRef.id,
+          destLat: destinationCoords.value?.lat || 0,
+          destLng: destinationCoords.value?.lng || 0,
+        }),
+      });
+      console.log("Device config sent for trip:", tripRef.id);
+    } catch (err) {
+      console.warn(
+        "Failed to send config to device — trip still created:",
+        err.message,
+      );
+    }
 
     timer = setInterval(() => {
       elapsedSeconds.value += 1;
