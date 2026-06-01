@@ -2,15 +2,15 @@
 #define CONFIG_H
 
 // ===================== WIFI =====================
-#define WIFI_SSID "wifi-ssid"
-#define WIFI_PASSWORD "wifi-password"
+#define WIFI_SSID "bbrouter"
+#define WIFI_PASSWORD "107149090195"
 
 // ===================== MQTT =====================
-#define MQTT_HOST "mqtthost.s1.eu.hivemq.cloud"
+#define MQTT_HOST "87c9fdddd5c143b182358ae6f39ba5ab.s1.eu.hivemq.cloud"
 #define MQTT_PORT 8883
-#define MQTT_USERNAME "mqtt-username"
-#define MQTT_PASSWORD "mqtt-password"
-#define MQTT_CLIENT_ID "mqtt-client-id"
+#define MQTT_USERNAME "holdon"
+#define MQTT_PASSWORD "Keanno&Pogi=999"
+#define MQTT_CLIENT_ID "holdon-device-01"
 
 // ===================== MQTT TOPICS =====================
 #define TOPIC_LOCATION "holdon/location"
